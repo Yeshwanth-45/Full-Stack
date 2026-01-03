@@ -1,0 +1,20 @@
+### Create Order (JWT required)
+@token = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyQHRlc3QuY29tIiwiaWF0IjoxNzY3MzM3MjUwLCJleHAiOjE3Njc0MjM2NTB9.9fu8r1DmmSzg_BMWr4gy89tcOriZavYYb_yoJxsXtYQ
+POST http://localhost:8080/api/orders
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "items": [
+    {
+      "menuItemId": 1,
+      "quantity": 2
+    }
+  ]
+}
+
+###
+
+### Get My Orders
+GET http://localhost:8080/api/orders
+Authorization: Bearer {{token}}
