@@ -51,22 +51,22 @@ export default function Home() {
     if (!token) {
         return (
             <div style={styles.notLoggedIn}>
-                <h1>🍔 Welcome to FoodApp</h1>
+                <h1>Welcome to FoodApp</h1>
                 <p>Please <Link to="/auth" style={{color: "#667eea", fontWeight: "bold"}}>login or register</Link> to order food</p>
             </div>
         );
     }
 
-    if (loading) return <div style={styles.loadingContainer}><p>🔄 Loading restaurants...</p></div>;
-    if (error) return <div style={styles.errorContainer}><p>❌ {error}</p></div>;
+    if (loading) return <div style={styles.loadingContainer}><p>Loading restaurants...</p></div>;
+    if (error) return <div style={styles.errorContainer}><p>{error}</p></div>;
 
     return (
         <div style={styles.container}>
-            <h1 style={styles.title}>🏪 Available Restaurants</h1>
+            <h1 style={styles.title}>Available Restaurants</h1>
             
             {/* Location Filter */}
             <div style={styles.filterSection}>
-                <label style={styles.filterLabel}>📍 Select Location:</label>
+                <label style={styles.filterLabel}>Select Location:</label>
                 <select 
                     value={selectedLocation} 
                     onChange={(e) => setSelectedLocation(e.target.value)}
@@ -82,11 +82,13 @@ export default function Home() {
             <div style={styles.grid}>
                 {restaurants.map(r => (
                     <div key={r.id} style={styles.restaurantCard}>
-                        <div style={styles.cardImage}>🏢</div>
+                        <div style={styles.cardImage}>
+                            <div style={styles.placeholderIcon}>Restaurant</div>
+                        </div>
                         <h3 style={styles.restaurantName}>{r.name}</h3>
                         <p style={styles.description}>{r.description || "No description"}</p>
-                        {r.location && <p style={styles.location}>📍 {r.location}</p>}
-                        <p style={styles.rating}>⭐ {r.rating || 4.5}</p>
+                        {r.location && <p style={styles.location}>{r.location}</p>}
+                        <p style={styles.rating}>Rating: {r.rating || 4.5}</p>
                         <Link 
                             to={`/menu?restaurant=${r.id}`} 
                             style={styles.viewMenuBtn}
@@ -156,7 +158,12 @@ const styles = {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        fontSize: "64px"
+        color: "white"
+    },
+    placeholderIcon: {
+        fontSize: "16px",
+        fontWeight: "600",
+        textAlign: "center"
     },
     restaurantName: {
         padding: "16px 16px 8px 16px",

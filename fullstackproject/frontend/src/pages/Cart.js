@@ -7,6 +7,8 @@ export default function Cart() {
     const [loading, setLoading] = useState(false);
     const [couponCode, setCouponCode] = useState("");
     const [discount, setDiscount] = useState(0);
+    const [deliveryAddress, setDeliveryAddress] = useState("");
+    const [deliveryCoordinates, setDeliveryCoordinates] = useState(null);
     const token = localStorage.getItem("token");
 
     useEffect(() => {
@@ -44,29 +46,40 @@ export default function Cart() {
             return;
         }
 
+        if (!deliveryAddress.trim()) {
+            alert("Please enter a delivery address!");
+            return;
+        }
+
         setLoading(true);
         try {
+            const orderData = {
+                items: cart.map(item => ({
+                    itemId: item.id,
+                    quantity: item.quantity
+                })),
+                deliveryAddress: deliveryAddress,
+                deliveryLatitude: deliveryCoordinates?.lat || 12.9716, // Default to Bangalore
+                deliveryLongitude: deliveryCoordinates?.lng || 77.5946
+            };
+
             const res = await fetch("http://localhost:8080/api/orders", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${token}`
                 },
-                body: JSON.stringify({
-                    items: cart.map(item => ({
-                        itemId: item.id,
-                        quantity: item.quantity
-                    }))
-                })
+                body: JSON.stringify(orderData)
             });
 
             if (res.ok) {
-                alert("✅ Order placed successfully!");
+                const orderResponse = await res.json();
+                alert("Order placed successfully!");
                 localStorage.removeItem("cart");
                 setCart([]);
-                setTimeout(() => navigate("/orders"), 1500);
+                setTimeout(() => navigate(`/tracking/${orderResponse.id || 1}`), 1500);
             } else {
-                alert("❌ Failed to place order");
+                alert("Failed to place order");
             }
         } catch (err) {
             console.error(err);
@@ -78,7 +91,7 @@ export default function Cart() {
 
     return (
         <div style={styles.container}>
-            <h1 style={styles.title}>🛒 Shopping Cart</h1>
+            <h1 style={styles.title}>Shopping Cart</h1>
 
             {cart.length === 0 ? (
                 <div style={styles.emptyCart}>
@@ -116,7 +129,7 @@ export default function Cart() {
                                     onClick={() => removeItem(item.id)}
                                     style={styles.removeBtn}
                                 >
-                                    🗑️
+                                    Remove
                                 </button>
                             </div>
                         ))}
@@ -124,6 +137,22 @@ export default function Cart() {
 
                         <div style={styles.summary}>
                         <h2 style={styles.summaryTitle}>Order Summary</h2>
+                        
+                        {/* Delivery Address Section */}
+                        <div style={styles.addressSection}>
+                            <label style={styles.addressLabel}>Delivery Address *</label>
+                            <textarea
+                                value={deliveryAddress}
+                                onChange={(e) => setDeliveryAddress(e.target.value)}
+                                placeholder="Enter your complete delivery address..."
+                                style={styles.addressInput}
+                                rows="3"
+                            />
+                            <small style={styles.addressHint}>
+                                Please provide a complete address including landmarks
+                            </small>
+                        </div>
+
                         <div style={styles.summaryRow}>
                             <span>Subtotal:</span>
                             <span>₹{total.toFixed(2)}</span>
@@ -162,10 +191,10 @@ export default function Cart() {
                         </div>
                         <button
                             onClick={handleCheckout}
-                            disabled={loading}
+                            disabled={loading || !deliveryAddress.trim()}
                             style={{
                                 ...styles.checkoutBtn,
-                                opacity: loading ? 0.6 : 1
+                                opacity: (loading || !deliveryAddress.trim()) ? 0.6 : 1
                             }}
                         >
                             {loading ? "Processing..." : "Place Order"}
@@ -211,6 +240,12 @@ const styles = {
         gridTemplateColumns: "1fr 400px",
         gap: "30px"
     },
+    "@media (max-width: 768px)": {
+        content: {
+            gridTemplateColumns: "1fr",
+            gap: "20px"
+        }
+    },
     itemsList: {
         background: "white",
         borderRadius: "12px",
@@ -219,7 +254,7 @@ const styles = {
     },
     cartItem: {
         display: "grid",
-        gridTemplateColumns: "1fr 120px 120px 50px",
+        gridTemplateColumns: "1fr 120px 120px 80px",
         gap: "20px",
         alignItems: "center",
         padding: "20px",
@@ -271,11 +306,14 @@ const styles = {
         textAlign: "right"
     },
     removeBtn: {
-        background: "transparent",
+        background: "#ff6b6b",
+        color: "white",
         border: "none",
-        fontSize: "16px",
+        borderRadius: "4px",
+        padding: "6px 12px",
+        fontSize: "12px",
         cursor: "pointer",
-        opacity: 0.6
+        fontWeight: "600"
     },
     summary: {
         background: "white",
@@ -289,6 +327,34 @@ const styles = {
         fontSize: "18px",
         fontWeight: "700",
         color: "#1a1a1a"
+    },
+    addressSection: {
+        marginBottom: "20px",
+        paddingBottom: "20px",
+        borderBottom: "1px solid #e0e0e0"
+    },
+    addressLabel: {
+        display: "block",
+        marginBottom: "8px",
+        fontSize: "14px",
+        fontWeight: "600",
+        color: "#1a1a1a"
+    },
+    addressInput: {
+        width: "100%",
+        padding: "12px",
+        border: "2px solid #e0e0e0",
+        borderRadius: "8px",
+        fontSize: "14px",
+        fontFamily: "inherit",
+        resize: "vertical",
+        boxSizing: "border-box"
+    },
+    addressHint: {
+        display: "block",
+        marginTop: "6px",
+        fontSize: "12px",
+        color: "#666"
     },
     summaryRow: {
         display: "flex",

@@ -5,6 +5,7 @@ import AuthPage from "./pages/AuthPage";
 import Menu from "./pages/Menu";
 import Orders from "./pages/Orders";
 import Cart from "./pages/Cart";
+import OrderTracking from "./pages/OrderTracking";
 import PrivateRoute from "./components/PrivateRoute";
 
 export default function App() {
@@ -17,6 +18,7 @@ export default function App() {
                 <Route path="/menu" element={<PrivateRoute><Menu /></PrivateRoute>} />
                 <Route path="/orders" element={<PrivateRoute><Orders /></PrivateRoute>} />
                 <Route path="/cart" element={<PrivateRoute><Cart /></PrivateRoute>} />
+                <Route path="/tracking/:orderId" element={<PrivateRoute><OrderTracking /></PrivateRoute>} />
             </Routes>
         </>
     );

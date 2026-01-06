@@ -8,6 +8,39 @@ export default function Orders() {
     const [error, setError] = useState("");
     const token = localStorage.getItem("token");
 
+    const handleCancelOrder = async (orderId) => {
+        if (!window.confirm('Are you sure you want to cancel this order?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`http://localhost:8080/api/tracking/order/${orderId}/update-status`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ status: 'CANCELLED' })
+            });
+
+            if (response.ok) {
+                alert('Order cancelled successfully');
+                // Refresh orders
+                const res = await fetch("http://localhost:8080/api/orders/my", {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    setOrders(Array.isArray(data) ? data : []);
+                }
+            } else {
+                alert('Failed to cancel order');
+            }
+        } catch (err) {
+            alert('Cannot connect to server');
+        }
+    };
+
     useEffect(() => {
         if (!token) return;
 
@@ -34,12 +67,12 @@ export default function Orders() {
         fetchOrders();
     }, [token]);
 
-    if (loading) return <div style={styles.loadingContainer}><p>🔄 Loading orders...</p></div>;
-    if (error) return <div style={styles.errorContainer}><p>❌ {error}</p></div>;
+    if (loading) return <div style={styles.loadingContainer}><p>Loading orders...</p></div>;
+    if (error) return <div style={styles.errorContainer}><p>{error}</p></div>;
 
     return (
         <div style={styles.container}>
-            <h1 style={styles.title}>📦 My Orders</h1>
+            <h1 style={styles.title}>My Orders</h1>
 
             {orders.length === 0 ? (
                 <div style={styles.emptyOrders}>
@@ -85,6 +118,23 @@ export default function Orders() {
                                         </ul>
                                     </div>
                                 )}
+
+                                <div style={styles.actionButtons}>
+                                    <button
+                                        onClick={() => navigate(`/tracking/${order.id}`)}
+                                        style={styles.trackButton}
+                                    >
+                                        Track Order
+                                    </button>
+                                    {(order.status === "PENDING" || order.status === "CONFIRMED") && (
+                                        <button
+                                            onClick={() => handleCancelOrder(order.id)}
+                                            style={styles.cancelButton}
+                                        >
+                                            Cancel Order
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     ))}
@@ -96,12 +146,12 @@ export default function Orders() {
 
 const getStatusLabel = (status) => {
     const labels = {
-        "PENDING": "⏳ Pending",
-        "CONFIRMED": "✅ Confirmed",
-        "PREPARING": "👨‍🍳 Preparing",
-        "OUT_FOR_DELIVERY": "🚗 Out for Delivery",
-        "DELIVERED": "📍 Delivered",
-        "CANCELLED": "❌ Cancelled"
+        "PENDING": "Pending",
+        "CONFIRMED": "Confirmed",
+        "PREPARING": "Preparing",
+        "OUT_FOR_DELIVERY": "Out for Delivery",
+        "DELIVERED": "Delivered",
+        "CANCELLED": "Cancelled"
     };
     return labels[status] || status;
 };
@@ -219,6 +269,35 @@ const styles = {
     qty: {
         marginLeft: "8px",
         color: "#999"
+    },
+    actionButtons: {
+        display: "flex",
+        gap: "10px",
+        marginTop: "16px",
+        paddingTop: "16px",
+        borderTop: "1px solid #e0e0e0"
+    },
+    trackButton: {
+        flex: 1,
+        padding: "10px 16px",
+        background: "#667eea",
+        color: "white",
+        border: "none",
+        borderRadius: "6px",
+        cursor: "pointer",
+        fontWeight: "600",
+        fontSize: "14px"
+    },
+    cancelButton: {
+        flex: 1,
+        padding: "10px 16px",
+        background: "#ff6b6b",
+        color: "white",
+        border: "none",
+        borderRadius: "6px",
+        cursor: "pointer",
+        fontWeight: "600",
+        fontSize: "14px"
     },
     loadingContainer: {
         textAlign: "center",

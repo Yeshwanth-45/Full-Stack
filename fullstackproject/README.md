@@ -1,29 +1,29 @@
-# 🍕 Full-Stack Food Delivery Application
+# Full-Stack Food Delivery Application
 
 A modern, secure food delivery application built with **React** frontend and **Spring Boot** backend, featuring **Phone + OTP Authentication** and **Google Sign-In**.
 
-## 🚀 Features
+## Features
 
-### 🔐 Authentication
+### Authentication
 - **Phone + OTP Authentication** - Secure 6-digit OTP with 5-minute expiry
 - **Google Sign-In Integration** - OAuth 2.0 authentication
 - **JWT Token Management** - 24-hour secure tokens
 - **Protected Routes** - Secure API endpoints
 
-### 🍽️ Food Ordering
+### Food Ordering
 - **Restaurant Browsing** - View available restaurants
 - **Menu Management** - Browse restaurant menus
 - **Shopping Cart** - Add/remove items, manage quantities
 - **Order History** - Track previous orders
 - **Real-time Updates** - Live order status
 
-### 🛡️ Security
+### Security
 - **Stateless Authentication** - JWT-based security
 - **CORS Configuration** - Cross-origin resource sharing
 - **Input Validation** - Secure data handling
 - **Token Expiry Management** - Automatic session management
 
-## 🏗️ Technology Stack
+## Technology Stack
 
 ### Backend
 - **Java 17** - Modern Java features
@@ -42,14 +42,14 @@ A modern, secure food delivery application built with **React** frontend and **S
 - **Fetch API** - HTTP client
 - **CSS3** - Responsive styling
 
-## 📋 Prerequisites
+## Prerequisites
 
 - **Java 17+** installed
 - **Node.js 16+** with npm
 - **MySQL 8.0+** (optional - H2 in-memory DB included)
 - **Git** for version control
 
-## 🚀 Quick Start
+## Quick Start
 
 ### 1. Clone Repository
 ```bash
@@ -76,7 +76,7 @@ npm start
 - **Backend API:** http://localhost:8080
 - **H2 Console:** http://localhost:8080/h2-console
 
-## 📱 How to Test
+## How to Test
 
 ### OTP Authentication Flow
 1. Open http://localhost:3000
@@ -91,7 +91,7 @@ npm start
 2. Select your Google account
 3. Automatically logged in and redirected
 
-## 🗂️ Project Structure
+## Project Structure
 
 ```
 Full-Stack/
@@ -121,7 +121,7 @@ Full-Stack/
     └── [8 more guides...]
 ```
 
-## 🔧 API Endpoints
+## API Endpoints
 
 ### Authentication
 - `POST /api/auth/send-otp` - Send OTP to phone
@@ -134,7 +134,7 @@ Full-Stack/
 - `POST /api/orders` - Create new order
 - `GET /api/restaurants` - Get restaurants
 
-## 🛠️ Configuration
+## Configuration
 
 ### Backend Configuration
 **File:** `backend/src/main/resources/application.properties`
@@ -158,7 +158,7 @@ server.port=8080
 <GoogleOAuthProvider clientId="YOUR_GOOGLE_CLIENT_ID">
 ```
 
-## 🔒 Security Notes
+## Security Notes
 
 ### For Development
 - OTP codes are logged to backend console
@@ -173,7 +173,7 @@ server.port=8080
 4. **Update CORS** settings
 5. **Use Environment Variables** for secrets
 
-## 📚 Documentation
+## Documentation
 
 Comprehensive documentation available:
 
@@ -184,7 +184,7 @@ Comprehensive documentation available:
 - **GOOGLE_SIGNIN_SETUP.md** - OAuth configuration
 - **And 3 more detailed guides...**
 
-## 🧪 Testing
+## Testing
 
 ### Backend Tests
 ```bash
@@ -203,7 +203,7 @@ npm test
 - Browser DevTools for frontend debugging
 - H2 Console for database inspection
 
-## 🚀 Deployment
+## Deployment
 
 ### Backend Deployment
 ```bash
@@ -219,7 +219,7 @@ npm run build
 # Deploy build/ folder to your hosting service
 ```
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create feature branch (`git checkout -b feature/amazing-feature`)
@@ -227,30 +227,30 @@ npm run build
 4. Push to branch (`git push origin feature/amazing-feature`)
 5. Open Pull Request
 
-## 📝 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 👨‍💻 Author
+## Author
 
 **Yeshwanth**
 - GitHub: [@Yeshwanth-45](https://github.com/Yeshwanth-45)
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - Spring Boot team for the excellent framework
 - React team for the powerful frontend library
 - JWT.io for token standards
 - Material-UI for beautiful components
 
-## 📞 Support
+## Support
 
 For support and questions:
 1. Check the comprehensive documentation in the project
 2. Open an issue on GitHub
 3. Review the troubleshooting guides
 
-## 🎯 Roadmap
+## Roadmap
 
 - [ ] Payment Integration (Stripe/PayPal)
 - [ ] Real-time Order Tracking
@@ -262,7 +262,7 @@ For support and questions:
 
 ---
 
-## 🏆 Project Status
+## Project Status
 
 ✅ **COMPLETE & PRODUCTION READY**
 
@@ -274,8 +274,8 @@ For support and questions:
 - Documentation: 100+ pages ✅
 - Testing: Comprehensive guides ✅
 
-**Ready to deploy and scale!** 🚀
+**Ready to deploy and scale!**
 
 ---
 
-*Built with ❤️ using modern technologies and best practices*
+*Built with care using modern technologies and best practices*

@@ -10,7 +10,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
+    @Column(unique = true, nullable = true)
     private String email;
 
     @Column(nullable = true)
@@ -24,6 +24,19 @@ public class User {
 
     @Column
     private String role = "USER";
+
+    // OTP fields
+    @Column(unique = true, nullable = true)
+    private String phoneNumber;
+
+    @Column
+    private String otp;
+
+    @Column
+    private Long otpExpiry;
+
+    @Column
+    private Boolean otpVerified = false;
 
     public User() {
     }
@@ -40,6 +53,12 @@ public class User {
         this.name = name;
         this.provider = "GOOGLE";
         this.password = null;
+    }
+
+    // Constructor for phone-based users
+    public User(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+        this.provider = "PHONE";
     }
 
     public Long getId() {
@@ -88,5 +107,37 @@ public class User {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public String getOtp() {
+        return otp;
+    }
+
+    public void setOtp(String otp) {
+        this.otp = otp;
+    }
+
+    public Long getOtpExpiry() {
+        return otpExpiry;
+    }
+
+    public void setOtpExpiry(Long otpExpiry) {
+        this.otpExpiry = otpExpiry;
+    }
+
+    public Boolean getOtpVerified() {
+        return otpVerified;
+    }
+
+    public void setOtpVerified(Boolean otpVerified) {
+        this.otpVerified = otpVerified;
     }
 }

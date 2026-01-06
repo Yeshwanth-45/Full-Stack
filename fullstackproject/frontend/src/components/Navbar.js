@@ -18,7 +18,7 @@ export default function Navbar() {
             color: "white"
         }}>
             <Link to="/" style={{ color: "white", textDecoration: "none", fontSize: "20px", fontWeight: "bold" }}>
-                🍔 FoodApp
+                FoodApp
             </Link>
             <div>
                 {token ? (

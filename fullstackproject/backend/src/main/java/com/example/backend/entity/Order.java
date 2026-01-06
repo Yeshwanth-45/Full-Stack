@@ -1,6 +1,7 @@
 package com.example.backend.entity;
 
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 
 @SuppressWarnings("JpaDataSourceORMInspection")
 @Entity
@@ -25,6 +26,21 @@ public class Order {
     private double deliveryFee;
     private double tax;
     private String couponCode;
+
+    // Tracking fields
+    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime updatedAt = LocalDateTime.now();
+    
+    // Delivery tracking fields
+    private String deliveryAddress;
+    private Double deliveryLatitude;
+    private Double deliveryLongitude;
+    private String driverName;
+    private String driverPhone;
+    private Double driverLatitude;
+    private Double driverLongitude;
+    private LocalDateTime estimatedDeliveryTime;
+    private String trackingNotes;
 
     public Order() {
     }
@@ -52,6 +68,7 @@ public class Order {
 
     public void setStatus(String status) {
         this.status = status;
+        this.updatedAt = LocalDateTime.now();
     }
 
     public double getTotalAmount() {
@@ -92,5 +109,93 @@ public class Order {
 
     public void setCouponCode(String couponCode) {
         this.couponCode = couponCode;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public String getDeliveryAddress() {
+        return deliveryAddress;
+    }
+
+    public void setDeliveryAddress(String deliveryAddress) {
+        this.deliveryAddress = deliveryAddress;
+    }
+
+    public Double getDeliveryLatitude() {
+        return deliveryLatitude;
+    }
+
+    public void setDeliveryLatitude(Double deliveryLatitude) {
+        this.deliveryLatitude = deliveryLatitude;
+    }
+
+    public Double getDeliveryLongitude() {
+        return deliveryLongitude;
+    }
+
+    public void setDeliveryLongitude(Double deliveryLongitude) {
+        this.deliveryLongitude = deliveryLongitude;
+    }
+
+    public String getDriverName() {
+        return driverName;
+    }
+
+    public void setDriverName(String driverName) {
+        this.driverName = driverName;
+    }
+
+    public String getDriverPhone() {
+        return driverPhone;
+    }
+
+    public void setDriverPhone(String driverPhone) {
+        this.driverPhone = driverPhone;
+    }
+
+    public Double getDriverLatitude() {
+        return driverLatitude;
+    }
+
+    public void setDriverLatitude(Double driverLatitude) {
+        this.driverLatitude = driverLatitude;
+    }
+
+    public Double getDriverLongitude() {
+        return driverLongitude;
+    }
+
+    public void setDriverLongitude(Double driverLongitude) {
+        this.driverLongitude = driverLongitude;
+    }
+
+    public LocalDateTime getEstimatedDeliveryTime() {
+        return estimatedDeliveryTime;
+    }
+
+    public void setEstimatedDeliveryTime(LocalDateTime estimatedDeliveryTime) {
+        this.estimatedDeliveryTime = estimatedDeliveryTime;
+    }
+
+    public String getTrackingNotes() {
+        return trackingNotes;
+    }
+
+    public void setTrackingNotes(String trackingNotes) {
+        this.trackingNotes = trackingNotes;
     }
 }

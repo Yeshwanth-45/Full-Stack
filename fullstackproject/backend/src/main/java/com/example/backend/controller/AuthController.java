@@ -2,6 +2,8 @@ package com.example.backend.controller;
 
 import com.example.backend.dto.LoginRequest;
 import com.example.backend.dto.RegisterRequest;
+import com.example.backend.dto.SendOtpRequest;
+import com.example.backend.dto.VerifyOtpRequest;
 import com.example.backend.service.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,12 +13,44 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
+@CrossOrigin(origins = "http://localhost:3000")
 public class AuthController {
 
     private final AuthService authService;
 
     public AuthController(AuthService authService) {
         this.authService = authService;
+    }
+
+    @PostMapping("/send-otp")
+    public ResponseEntity<?> sendOtp(@RequestBody SendOtpRequest request) {
+        try {
+            String message = authService.sendOtp(request.getPhoneNumber());
+            Map<String, String> response = new HashMap<>();
+            response.put("message", message);
+            response.put("phoneNumber", request.getPhoneNumber());
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+
+    @PostMapping("/verify-otp")
+    public ResponseEntity<?> verifyOtp(@RequestBody VerifyOtpRequest request) {
+        try {
+            String token = authService.verifyOtp(request.getPhoneNumber(), request.getOtp());
+            Map<String, String> response = new HashMap<>();
+            response.put("token", token);
+            response.put("phoneNumber", request.getPhoneNumber());
+            response.put("message", "OTP verified successfully");
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
     }
 
     @PostMapping("/register")

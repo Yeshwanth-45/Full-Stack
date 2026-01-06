@@ -56,26 +56,28 @@ export default function Menu() {
         }
         localStorage.setItem("cart", JSON.stringify(cart));
         loadCart();
-        alert("✅ Added to cart!");
+        alert("Added to cart!");
     };
 
-    if (loading) return <div style={styles.loadingContainer}><p>🔄 Loading menu...</p></div>;
-    if (error) return <div style={styles.errorContainer}><p>❌ {error}</p></div>;
+    if (loading) return <div style={styles.loadingContainer}><p>Loading menu...</p></div>;
+    if (error) return <div style={styles.errorContainer}><p>{error}</p></div>;
 
     return (
         <div style={styles.container}>
             <div style={styles.header}>
                 <button onClick={() => navigate("/")} style={styles.backBtn}>← Back</button>
-                <h1 style={styles.title}>📋 Menu</h1>
+                <h1 style={styles.title}>Menu</h1>
                 <button onClick={() => navigate("/cart")} style={styles.cartBtn}>
-                    🛒 Cart ({cartCount})
+                    Cart ({cartCount})
                 </button>
             </div>
 
             <div style={styles.grid}>
                 {items.map(item => (
                     <div key={item.id} style={styles.itemCard}>
-                        <div style={styles.itemImage}>🍕</div>
+                        <div style={styles.itemImage}>
+                            <div style={styles.placeholderIcon}>Food Item</div>
+                        </div>
                         <h3 style={styles.itemName}>{item.name}</h3>
                         <p style={styles.itemDesc}>{item.description || "Delicious item"}</p>
                         <div style={styles.itemFooter}>
@@ -152,7 +154,12 @@ const styles = {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        fontSize: "48px"
+        color: "white"
+    },
+    placeholderIcon: {
+        fontSize: "14px",
+        fontWeight: "600",
+        textAlign: "center"
     },
     itemName: {
         padding: "12px 12px 4px 12px",
