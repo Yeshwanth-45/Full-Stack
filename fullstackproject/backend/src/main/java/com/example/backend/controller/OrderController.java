@@ -19,10 +19,10 @@ public class OrderController {
 
     @PostMapping
     public Order placeOrder(
-            @RequestBody Order order,
+            @RequestBody com.example.backend.dto.OrderRequest orderRequest,
             Authentication authentication
     ) {
-        return orderService.placeOrder(order, authentication.getName());
+        return orderService.placeOrder(orderRequest, authentication.getName());
     }
 
     @GetMapping("/my")
