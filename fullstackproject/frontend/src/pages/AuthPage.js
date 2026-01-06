@@ -3,38 +3,72 @@ import { useNavigate } from "react-router-dom";
 
 export default function AuthPage() {
     const navigate = useNavigate();
-    const [step, setStep] = useState("phone"); // "phone", "otp", "success"
-    const [phoneNumber, setPhoneNumber] = useState("");
-    const [otp, setOtp] = useState("");
+    const [activeTab, setActiveTab] = useState("login");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
 
-    const handleSendOtp = async (e) => {
+    const [loginData, setLoginData] = useState({ email: "", password: "" });
+    const [registerData, setRegisterData] = useState({
+        name: "",
+        email: "",
+        password: "",
+        confirmPassword: ""
+    });
+
+    const handleLoginChange = (e) => {
+        const { name, value } = e.target;
+        setLoginData(prev => ({ ...prev, [name]: value }));
+        setError("");
+    };
+
+    const handleRegisterChange = (e) => {
+        const { name, value } = e.target;
+        setRegisterData(prev => ({ ...prev, [name]: value }));
+        setError("");
+    };
+
+    const validateEmail = (email) => {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(email);
+    };
+
+    const handleLogin = async (e) => {
         e.preventDefault();
         setError("");
         setSuccess("");
 
-        if (!phoneNumber || phoneNumber.length !== 10) {
-            setError("Please enter a valid 10-digit phone number");
+        if (!loginData.email || !loginData.password) {
+            setError("Please fill in all fields");
+            return;
+        }
+
+        if (!validateEmail(loginData.email)) {
+            setError("Please enter a valid email");
             return;
         }
 
         setLoading(true);
         try {
-            const res = await fetch("http://localhost:8080/api/auth/send-otp", {
+            const res = await fetch("http://localhost:8080/api/auth/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ phoneNumber })
+                body: JSON.stringify({
+                    email: loginData.email,
+                    password: loginData.password
+                })
             });
 
             const data = await res.json();
 
-            if (res.ok) {
-                setSuccess(`OTP sent to ${phoneNumber}. Check your SMS or backend console.`);
-                setStep("otp");
+            if (res.ok && data.token) {
+                localStorage.setItem("token", data.token);
+                localStorage.setItem("user", JSON.stringify({ email: data.email }));
+                setSuccess("Login successful! Redirecting...");
+                setTimeout(() => navigate("/"), 1500);
             } else {
-                setError(data?.message || "Failed to send OTP");
+                setError(data?.message || "Login failed");
             }
         } catch (err) {
             console.error(err);
@@ -44,135 +78,215 @@ export default function AuthPage() {
         }
     };
 
-    const handleVerifyOtp = async (e) => {
+    const handleRegister = async (e) => {
         e.preventDefault();
         setError("");
         setSuccess("");
 
-        if (!otp || otp.length !== 6) {
-            setError("Please enter a valid 6-digit OTP");
+        if (!registerData.email || !registerData.password || !registerData.name || !registerData.confirmPassword) {
+            setError("Please fill in all fields");
+            return;
+        }
+
+        if (!validateEmail(registerData.email)) {
+            setError("Please enter a valid email");
+            return;
+        }
+
+        if (registerData.password.length < 6) {
+            setError("Password must be at least 6 characters");
+            return;
+        }
+
+        if (registerData.password !== registerData.confirmPassword) {
+            setError("Passwords do not match");
             return;
         }
 
         setLoading(true);
         try {
-            const res = await fetch("http://localhost:8080/api/auth/verify-otp", {
+            const res = await fetch("http://localhost:8080/api/auth/register", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ phoneNumber, otp })
+                body: JSON.stringify({
+                    email: registerData.email,
+                    password: registerData.password,
+                    name: registerData.name
+                })
             });
 
             const data = await res.json();
 
             if (res.ok && data.token) {
                 localStorage.setItem("token", data.token);
-                localStorage.setItem("user", JSON.stringify({ phoneNumber: data.phoneNumber }));
-                setSuccess("Login successful! Redirecting...");
-                setStep("success");
+                localStorage.setItem("user", JSON.stringify({ email: data.email, name: data.name }));
+                setSuccess("Registration successful! Redirecting...");
                 setTimeout(() => navigate("/"), 1500);
             } else {
-                setError(data?.message || "Invalid OTP");
+                setError(data?.message || "Registration failed");
             }
         } catch (err) {
             console.error(err);
-            setError("Cannot connect to server");
+            setError("Cannot connect to server. Check if backend is running.");
         } finally {
             setLoading(false);
         }
-    };
-
-    const resetForm = () => {
-        setStep("phone");
-        setPhoneNumber("");
-        setOtp("");
-        setError("");
-        setSuccess("");
     };
 
     return (
         <div style={styles.container}>
             <div style={styles.card}>
                 <h1 style={styles.title}>FoodDelivery</h1>
-                <p style={styles.subtitle}>Secure Phone + OTP Authentication</p>
+                <p style={styles.subtitle}>Sign in to your account</p>
+
+                <div style={styles.tabs}>
+                    <button
+                        style={{
+                            ...styles.tab,
+                            ...(activeTab === "login" ? styles.tabActive : styles.tabInactive)
+                        }}
+                        onClick={() => setActiveTab("login")}
+                    >
+                        Login
+                    </button>
+                    <button
+                        style={{
+                            ...styles.tab,
+                            ...(activeTab === "register" ? styles.tabActive : styles.tabInactive)
+                        }}
+                        onClick={() => setActiveTab("register")}
+                    >
+                        Register
+                    </button>
+                </div>
 
                 {error && <div style={styles.errorMessage}>{error}</div>}
                 {success && <div style={styles.successMessage}>{success}</div>}
 
-                {step === "phone" && (
-                    <form onSubmit={handleSendOtp} style={styles.form}>
+                {activeTab === "login" && (
+                    <form onSubmit={handleLogin} style={styles.form}>
                         <div style={styles.formGroup}>
-                            <label style={styles.label}>Phone Number</label>
+                            <label style={styles.label}>Email Address</label>
                             <input
-                                type="tel"
-                                value={phoneNumber}
-                                onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                                placeholder="Enter 10-digit phone number"
+                                type="email"
+                                name="email"
+                                value={loginData.email}
+                                onChange={handleLoginChange}
+                                placeholder="you@example.com"
                                 style={styles.input}
                                 disabled={loading}
-                                maxLength="10"
                             />
-                            <small style={styles.hint}>We'll send you a 6-digit OTP</small>
+                        </div>
+
+                        <div style={styles.formGroup}>
+                            <label style={styles.label}>Password</label>
+                            <div style={styles.passwordContainer}>
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    name="password"
+                                    value={loginData.password}
+                                    onChange={handleLoginChange}
+                                    placeholder="••••••••"
+                                    style={{...styles.input, paddingRight: "50px"}}
+                                    disabled={loading}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    style={styles.showPasswordBtn}
+                                >
+                                    {showPassword ? "Hide" : "Show"}
+                                </button>
+                            </div>
                         </div>
 
                         <button
                             type="submit"
-                            disabled={loading || phoneNumber.length !== 10}
+                            disabled={loading}
                             style={{
                                 ...styles.submitBtn,
-                                opacity: (loading || phoneNumber.length !== 10) ? 0.6 : 1
+                                opacity: loading ? 0.6 : 1
                             }}
                         >
-                            {loading ? "Sending OTP..." : "Send OTP"}
+                            {loading ? "Logging in..." : "Login"}
                         </button>
                     </form>
                 )}
 
-                {step === "otp" && (
-                    <form onSubmit={handleVerifyOtp} style={styles.form}>
+                {activeTab === "register" && (
+                    <form onSubmit={handleRegister} style={styles.form}>
                         <div style={styles.formGroup}>
-                            <label style={styles.label}>Enter OTP</label>
+                            <label style={styles.label}>Full Name</label>
                             <input
                                 type="text"
-                                value={otp}
-                                onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                                placeholder="Enter 6-digit OTP"
+                                name="name"
+                                value={registerData.name}
+                                onChange={handleRegisterChange}
+                                placeholder="John Doe"
                                 style={styles.input}
                                 disabled={loading}
-                                maxLength="6"
                             />
-                            <small style={styles.hint}>
-                                OTP sent to {phoneNumber}. Check backend console for development.
-                            </small>
+                        </div>
+
+                        <div style={styles.formGroup}>
+                            <label style={styles.label}>Email Address</label>
+                            <input
+                                type="email"
+                                name="email"
+                                value={registerData.email}
+                                onChange={handleRegisterChange}
+                                placeholder="you@example.com"
+                                style={styles.input}
+                                disabled={loading}
+                            />
+                        </div>
+
+                        <div style={styles.formGroup}>
+                            <label style={styles.label}>Password</label>
+                            <div style={styles.passwordContainer}>
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    name="password"
+                                    value={registerData.password}
+                                    onChange={handleRegisterChange}
+                                    placeholder="••••••••"
+                                    style={{...styles.input, paddingRight: "50px"}}
+                                    disabled={loading}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    style={styles.showPasswordBtn}
+                                >
+                                    {showPassword ? "Hide" : "Show"}
+                                </button>
+                            </div>
+                        </div>
+
+                        <div style={styles.formGroup}>
+                            <label style={styles.label}>Confirm Password</label>
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                name="confirmPassword"
+                                value={registerData.confirmPassword}
+                                onChange={handleRegisterChange}
+                                placeholder="••••••••"
+                                style={styles.input}
+                                disabled={loading}
+                            />
                         </div>
 
                         <button
                             type="submit"
-                            disabled={loading || otp.length !== 6}
+                            disabled={loading}
                             style={{
                                 ...styles.submitBtn,
-                                opacity: (loading || otp.length !== 6) ? 0.6 : 1
+                                opacity: loading ? 0.6 : 1
                             }}
                         >
-                            {loading ? "Verifying..." : "Verify OTP"}
-                        </button>
-
-                        <button
-                            type="button"
-                            onClick={resetForm}
-                            style={styles.backBtn}
-                            disabled={loading}
-                        >
-                            Back to Phone Number
+                            {loading ? "Registering..." : "Register"}
                         </button>
                     </form>
-                )}
-
-                {step === "success" && (
-                    <div style={styles.successContainer}>
-                        <div style={styles.successIcon}>✓</div>
-                        <h3 style={styles.successTitle}>Login Successful!</h3>
-                        <p style={styles.successText}>Redirecting to home page...</p>
-                    </div>
                 )}
 
                 <div style={styles.divider}>
@@ -224,6 +338,31 @@ const styles = {
         color: "#666",
         textAlign: "center"
     },
+    tabs: {
+        display: "flex",
+        gap: "12px",
+        marginBottom: "30px",
+        borderBottom: "2px solid #e0e0e0"
+    },
+    tab: {
+        flex: 1,
+        padding: "12px",
+        border: "none",
+        background: "transparent",
+        fontSize: "16px",
+        fontWeight: "600",
+        cursor: "pointer",
+        transition: "all 0.3s ease",
+        color: "#999"
+    },
+    tabActive: {
+        color: "#667eea",
+        borderBottom: "3px solid #667eea",
+        marginBottom: "-2px"
+    },
+    tabInactive: {
+        color: "#999"
+    },
     form: {
         marginBottom: "20px"
     },
@@ -240,18 +379,28 @@ const styles = {
     input: {
         width: "100%",
         padding: "12px 16px",
-        fontSize: "16px",
+        fontSize: "14px",
         border: "2px solid #e0e0e0",
         borderRadius: "8px",
         boxSizing: "border-box",
         transition: "border-color 0.3s ease",
         fontFamily: "inherit"
     },
-    hint: {
-        display: "block",
-        marginTop: "6px",
+    passwordContainer: {
+        position: "relative",
+        display: "flex",
+        alignItems: "center"
+    },
+    showPasswordBtn: {
+        position: "absolute",
+        right: "12px",
+        background: "transparent",
+        border: "none",
+        color: "#667eea",
+        cursor: "pointer",
         fontSize: "12px",
-        color: "#666"
+        fontWeight: "600",
+        padding: "0"
     },
     submitBtn: {
         width: "100%",
@@ -264,18 +413,6 @@ const styles = {
         borderRadius: "8px",
         cursor: "pointer",
         transition: "transform 0.2s ease, box-shadow 0.2s ease",
-        marginTop: "10px"
-    },
-    backBtn: {
-        width: "100%",
-        padding: "10px 16px",
-        fontSize: "14px",
-        fontWeight: "600",
-        color: "#667eea",
-        background: "transparent",
-        border: "2px solid #667eea",
-        borderRadius: "8px",
-        cursor: "pointer",
         marginTop: "10px"
     },
     errorMessage: {
@@ -297,26 +434,6 @@ const styles = {
         color: "#3a3",
         fontSize: "14px",
         fontWeight: "500"
-    },
-    successContainer: {
-        textAlign: "center",
-        padding: "20px 0"
-    },
-    successIcon: {
-        fontSize: "48px",
-        color: "#4CAF50",
-        marginBottom: "16px"
-    },
-    successTitle: {
-        margin: "0 0 8px 0",
-        fontSize: "20px",
-        fontWeight: "600",
-        color: "#1a1a1a"
-    },
-    successText: {
-        margin: "0",
-        fontSize: "14px",
-        color: "#666"
     },
     divider: {
         display: "flex",
