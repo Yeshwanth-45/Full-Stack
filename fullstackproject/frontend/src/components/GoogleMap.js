@@ -71,7 +71,7 @@ const GoogleMap = ({
         if (mapRef.current) {
             initMap();
         }
-    }, []);
+    }, [deliveryLocation, zoom]);
 
     // Update delivery marker
     useEffect(() => {
@@ -97,7 +97,7 @@ const GoogleMap = ({
 
             setDeliveryMarker(marker);
         }
-    }, [map, deliveryLocation]);
+    }, [map, deliveryLocation, deliveryMarker]);
 
     // Update driver marker and route
     useEffect(() => {
@@ -146,7 +146,7 @@ const GoogleMap = ({
                 map.fitBounds(bounds);
             }
         }
-    }, [map, driverLocation, deliveryLocation, directionsService, directionsRenderer]);
+    }, [map, driverLocation, deliveryLocation, directionsService, directionsRenderer, driverMarker]);
 
     if (error) {
         return (

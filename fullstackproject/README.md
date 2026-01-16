@@ -1,27 +1,54 @@
-# Full-Stack Food Delivery Application
+# FoodieHub - Full Stack Food Delivery Application
 
-A modern, secure food delivery application built with **React** frontend and **Spring Boot** backend, featuring **Phone + OTP Authentication** and **Google Sign-In**.
+A modern, full-stack food delivery application built with **React** frontend and **Spring Boot** backend, featuring **Email/Password Authentication**, **Google Maps Integration**, and **Real Restaurant Images**.
 
-## Features
+## 🚀 Features Completed
 
-### Authentication
-- **Phone + OTP Authentication** - Secure 6-digit OTP with 5-minute expiry
-- **Google Sign-In Integration** - OAuth 2.0 authentication
-- **JWT Token Management** - 24-hour secure tokens
-- **Protected Routes** - Secure API endpoints
+### ✅ Core Application
+- **Email/Password Authentication** - Secure login and registration system
+- **Restaurant Management** - Browse restaurants by location and cuisine  
+- **Menu System** - View detailed menus with categories and pricing
+- **Shopping Cart** - Add/remove items, quantity management
+- **Order Management** - Place orders, view order history
+- **User Profiles** - Manage user information and addresses
 
-### Food Ordering
-- **Restaurant Browsing** - View available restaurants
-- **Menu Management** - Browse restaurant menus
-- **Shopping Cart** - Add/remove items, manage quantities
-- **Order History** - Track previous orders
-- **Real-time Updates** - Live order status
+### ✅ Advanced Features  
+- **Live Order Tracking** - Real-time GPS tracking with Google Maps
+- **Location-Based Services** - Filter restaurants by city/area
+- **Restaurant Images** - High-quality Unsplash images for all restaurants
+- **Food Images** - Appetizing food photography for all menu items
+- **Google Maps Integration** - Interactive maps with restaurant locations
+- **Modern UI Design** - Glass morphism effects, gradients, contemporary styling
+- **Responsive Design** - Works seamlessly across desktop and mobile devices
 
-### Security
-- **Stateless Authentication** - JWT-based security
-- **CORS Configuration** - Cross-origin resource sharing
-- **Input Validation** - Secure data handling
-- **Token Expiry Management** - Automatic session management
+### ✅ Technical Features
+- **RESTful APIs** - Comprehensive backend API with proper authentication
+- **Database Integration** - H2 database with JPA/Hibernate  
+- **Real-time Updates** - WebSocket integration for live tracking
+- **Image Handling** - Optimized image loading with fallbacks
+- **Location Services** - Coordinate-based restaurant positioning
+- **Error Handling** - Graceful error handling and user feedback
+
+## 📍 Restaurant Locations
+
+The application includes **7 restaurants** across **5 major Indian cities**:
+
+### Bangalore (3 locations)
+- **Spicy Hub** (Indiranagar) - Authentic Indian Cuisine
+- **Pizza Palace** (Koramangala) - Italian Pizzeria  
+- **Burger Barn** (Whitefield) - Premium American Burgers
+
+### Other Cities
+- **Chinese Wok** (Hyderabad, Banjara Hills) - Chinese Cuisine
+- **South Indian Café** (Chennai, Anna Nagar) - Traditional South Indian
+- **Taco Fiesta** (Mumbai, Bandra) - Mexican Street Food
+- **Sushi Zen** (Delhi, Connaught Place) - Japanese Sushi & Asian
+
+Each restaurant includes:
+- Real Google Maps coordinates
+- High-quality restaurant images from Unsplash
+- Detailed menu items with food photography
+- Accurate delivery information and ratings
 
 ## Technology Stack
 

@@ -8,7 +8,6 @@ export default function Cart() {
     const [couponCode, setCouponCode] = useState("");
     const [discount, setDiscount] = useState(0);
     const [deliveryAddress, setDeliveryAddress] = useState("");
-    const [deliveryCoordinates, setDeliveryCoordinates] = useState(null);
     const token = localStorage.getItem("token");
 
     useEffect(() => {
@@ -59,8 +58,8 @@ export default function Cart() {
                     quantity: item.quantity
                 })),
                 deliveryAddress: deliveryAddress,
-                deliveryLatitude: deliveryCoordinates?.lat || 12.9716, // Default to Bangalore
-                deliveryLongitude: deliveryCoordinates?.lng || 77.5946
+                deliveryLatitude: 12.9716, // Default to Bangalore
+                deliveryLongitude: 77.5946
             };
 
             const res = await fetch("http://localhost:8080/api/orders", {
