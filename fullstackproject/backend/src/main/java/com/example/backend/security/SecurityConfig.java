@@ -32,6 +32,10 @@ public class SecurityConfig {
                 .cors(cors -> {})
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()   // <-- allow all auth APIs
+                        .requestMatchers("/api/restaurants/**").permitAll()   // <-- allow restaurant browsing
+                        .requestMatchers("/api/menus/**").permitAll()   // <-- allow menu browsing
+                        .requestMatchers("/api/test").permitAll()   // <-- test endpoint
+                        .requestMatchers("/api/init-data").permitAll()   // <-- data initialization
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .anyRequest().authenticated()
                 )

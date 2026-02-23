@@ -7,8 +7,25 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 50%, #f8fafc 100%);
   min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Premium Background Pattern */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(118, 75, 162, 0.03) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
 }
 
 code {
@@ -20,49 +37,31 @@ code {
   box-sizing: border-box;
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar - Enhanced */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: linear-gradient(180deg, #f1f5f9 0%, #e2e8f0 100%);
+  border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-  border-radius: 4px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border-radius: 10px;
+  border: 2px solid #f1f5f9;
+  transition: all 0.3s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #ee5a24, #ff6b6b);
+  background: linear-gradient(135deg, #764ba2, #667eea);
+  border-color: #e2e8f0;
+  box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
 }
 
-/* Smooth transitions for all elements */
-* {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Button hover effects */
-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-}
-
-/* Card hover effects */
-.card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-}
-
-/* Focus styles */
-input:focus, select:focus, textarea:focus {
-  border-color: #ff6b6b !important;
-  box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1) !important;
-  outline: none;
-}
-
-/* Animation keyframes */
+/* Premium Animations */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -71,6 +70,51 @@ input:focus, select:focus, textarea:focus {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes floatIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
   }
 }
 
@@ -85,37 +129,261 @@ input:focus, select:focus, textarea:focus {
   }
 }
 
-.fade-in {
-  animation: fadeIn 0.6s ease-out;
-}
-
-.slide-in {
-  animation: slideIn 0.6s ease-out;
-}
-/* Loader animation */
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
 
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.05); opacity: 0.8; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+}
+
+@keyframes glow {
+    0% { box-shadow: 0 0 5px rgba(102, 126, 234, 0.5); }
+    50% { box-shadow: 0 0 20px rgba(102, 126, 234, 0.8); }
+    100% { box-shadow: 0 0 5px rgba(102, 126, 234, 0.5); }
+}
+
+@keyframes particle-float {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+}
+
+@keyframes shimmer {
+    0% { background-position: -1000px 0; }
+    100% { background-position: 1000px 0; }
+}
+
+/* Premium Restaurant Card Hover Effects */
+.premium-restaurant-card:hover {
+    transform: translateY(-16px) rotateX(2deg) !important;
+    box-shadow: 0 30px 80px rgba(102, 126, 234, 0.3), 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+}
+
+.premium-restaurant-card:hover img {
+    transform: scale(1.12) rotate(1deg) !important;
+}
+
+.premium-restaurant-card:hover .glowEffect {
+    opacity: 1 !important;
+}
+
+.premium-restaurant-card:active {
+    transform: translateY(-12px) scale(0.98) !important;
+}
+
+/* Smart Search Bar Hover & Focus */
+.smart-search-bar:hover {
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25), 0 0 0 4px rgba(102, 126, 234, 0.1) !important;
+    transform: translateY(-3px) scale(1.02) !important;
+}
+
+.smart-search-bar:focus-within {
+    box-shadow: 0 25px 70px rgba(102, 126, 234, 0.3), 0 0 0 5px rgba(102, 126, 234, 0.15) !important;
+    transform: translateY(-4px) scale(1.03) !important;
+    border-color: rgba(102, 126, 234, 0.5) !important;
+}
+
+.smart-search-bar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    transition: left 0.5s;
+}
+
+.smart-search-bar:focus-within::before {
+    left: 100%;
+}
+
+/* Suggestion Item Hover */
+button:hover .suggestionArrow {
+    opacity: 1 !important;
+    transform: translateX(5px) !important;
+}
+
+/* Mood Card Hover & Active */
+.mood-card:hover {
+    transform: scale(1.1) translateY(-6px) !important;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+}
+
+.mood-card:active {
+    transform: scale(1.05) translateY(-2px) !important;
+}
+
+/* Sort Button Hover & Active */
+.sort-btn:hover {
+    transform: translateY(-3px) scale(1.05) !important;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15) !important;
+}
+
+.sort-btn:active {
+    transform: translateY(-1px) scale(1.02) !important;
+}
+
+.sort-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.sort-btn:active::before {
+    width: 300px;
+    height: 300px;
+}
+
+/* Glassmorphism Effect - Enhanced */
+.glass {
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(30px) saturate(180%);
+    -webkit-backdrop-filter: blur(30px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.5),
+        inset 0 -1px 0 rgba(255, 255, 255, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.glass::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.7s ease;
+}
+
+.glass:hover::before {
+    left: 100%;
+}
+
+/* Premium Card Styles */
+.premium-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 
+        0 10px 40px rgba(0, 0, 0, 0.08),
+        0 2px 8px rgba(0, 0, 0, 0.04),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.premium-card::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(102, 126, 234, 0.05) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+.premium-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.12),
+        0 8px 24px rgba(102, 126, 234, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 1);
+    border-color: rgba(102, 126, 234, 0.3);
+}
+
+.premium-card:hover::after {
+    opacity: 1;
+}
+
+/* Neon Glow Text */
+.neon-text {
+    text-shadow: 0 0 10px currentColor, 0 0 20px currentColor;
+    animation: glow 2s ease-in-out infinite alternate;
+}
+
 /* Smooth transitions for all interactive elements */
-button:hover {
+button, a, input, select {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+button:hover, a:hover {
     transform: translateY(-2px);
 }
 
-/* Custom scrollbar for category tabs */
-.category-tabs::-webkit-scrollbar {
-    height: 4px;
+/* Focus styles */
+input:focus, select:focus, textarea:focus {
+    border-color: #667eea !important;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+    outline: none;
 }
 
-.category-tabs::-webkit-scrollbar-track {
-    background: #f1f5f9;
-    border-radius: 2px;
+/* Loading Skeleton */
+.skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 1000px 100%;
+    animation: shimmer 2s infinite;
 }
 
-.category-tabs::-webkit-scrollbar-thumb {
-    background: #ff6b6b;
-    border-radius: 2px;
+/* Fade in animation */
+.fade-in {
+    animation: fadeIn 0.6s ease-out;
+}
+
+.slide-in {
+    animation: slideIn 0.6s ease-out;
+}
+
+/* Restaurant card hover effects */
+.restaurant-card:hover {
+    transform: translateY(-8px) !important;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.15) !important;
+}
+
+.restaurant-card:hover .restaurant-image {
+    transform: scale(1.05) !important;
+}
+
+/* Quick action hover effects */
+.quick-action-item:hover {
+    background: rgba(102, 126, 234, 0.1) !important;
+    transform: translateY(-2px) !important;
+}
+
+/* Cuisine filter hover effects */
+.cuisine-filter:hover {
+    background: #667eea !important;
+    color: white !important;
+    transform: translateY(-2px) !important;
+}
+
+/* Cart badge pulse animation */
+.cart-badge {
+    animation: pulse 2s infinite;
 }
 
 /* Responsive design improvements */
@@ -139,100 +407,632 @@ button:hover {
         height: 200px !important;
         order: -1;
     }
-}
-/* Advanced animations for revolutionary features */
-@keyframes pulse {
-    0% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.05); opacity: 0.8; }
-    100% { transform: scale(1); opacity: 1; }
-}
 
-@keyframes soundWave {
-    0% { height: 20px; }
-    50% { height: 60px; }
-    100% { height: 20px; }
+    .premium-restaurant-card {
+        margin: 0 10px;
+    }
+
+    .moods-grid {
+        justify-content: center;
+    }
 }
 
-@keyframes float {
-    0% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
-    100% { transform: translateY(0px); }
+/* Dark Mode Styles - Enhanced */
+.dark-mode {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+    color: #f8fafc;
 }
 
-@keyframes glow {
-    0% { box-shadow: 0 0 5px rgba(255, 107, 107, 0.5); }
-    50% { box-shadow: 0 0 20px rgba(255, 107, 107, 0.8); }
-    100% { box-shadow: 0 0 5px rgba(255, 107, 107, 0.5); }
+.dark-mode .card {
+    background: rgba(30, 41, 59, 0.8);
+    border-color: rgba(100, 116, 139, 0.3);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(148, 163, 184, 0.1);
 }
 
-/* Feature button hover effects */
-.feature-btn:hover {
-    animation: float 2s ease-in-out infinite;
+.dark-mode .glass {
+    background: rgba(30, 41, 59, 0.6);
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
-/* AI recommendation cards */
-.ai-card {
-    animation: glow 3s ease-in-out infinite;
+.dark-mode .premium-restaurant-card {
+    background: rgba(30, 41, 59, 0.9);
+    border-color: rgba(100, 116, 139, 0.3);
 }
 
-/* Voice ordering sound waves */
-.sound-wave:nth-child(1) { animation-delay: 0s; }
-.sound-wave:nth-child(2) { animation-delay: 0.2s; }
-.sound-wave:nth-child(3) { animation-delay: 0.4s; }
-
-/* AR viewer effects */
-.ar-3d-effect {
-    animation: pulse 2s ease-in-out infinite;
+.dark-mode .premium-restaurant-card:hover {
+    box-shadow: 0 30px 80px rgba(102, 126, 234, 0.4), 0 10px 30px rgba(0, 0, 0, 0.6) !important;
 }
 
-/* Advanced gradient backgrounds */
-.gradient-bg-1 {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+/* Neon accents in dark mode */
+.dark-mode .sort-btn-active {
+    box-shadow: 0 12px 30px rgba(102, 126, 234, 0.6), 0 0 30px rgba(102, 126, 234, 0.4) !important;
 }
 
-.gradient-bg-2 {
-    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 50%, #ff9ff3 100%);
+.dark-mode .mood-card:hover {
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(102, 126, 234, 0.3) !important;
 }
 
-.gradient-bg-3 {
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-}
-
-/* Glass morphism effects */
-.glass-morphism {
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-}
-
-/* Advanced hover effects */
+/* Micro-interactions - Enhanced */
 .hover-lift {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
 }
 
 .hover-lift:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
 }
 
-/* Neon glow effects */
-.neon-glow {
-    text-shadow: 0 0 10px currentColor;
-    animation: glow 2s ease-in-out infinite alternate;
+.hover-lift:active {
+    transform: translateY(-2px) scale(0.98);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
 }
 
-/* Particle effects */
-@keyframes particle-float {
-    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-    100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+/* Ripple effect on click */
+@keyframes ripple {
+    0% {
+        transform: scale(0);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(4);
+        opacity: 0;
+    }
 }
 
-.particle {
+.ripple {
+    position: relative;
+    overflow: hidden;
+}
+
+.ripple::after {
+    content: '';
     position: absolute;
-    width: 4px;
-    height: 4px;
-    background: rgba(255, 107, 107, 0.6);
+    top: 50%;
+    left: 50%;
+    width: 100px;
+    height: 100px;
+    background: rgba(255, 255, 255, 0.5);
     border-radius: 50%;
-    animation: particle-float 3s linear infinite;
+    transform: translate(-50%, -50%) scale(0);
+    pointer-events: none;
+}
+
+.ripple:active::after {
+    animation: ripple 0.6s ease-out;
+}
+
+/* Gradient Text */
+.gradient-text {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Premium Button Styles */
+.premium-btn {
+    position: relative;
+    overflow: hidden;
+}
+
+.premium-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s;
+}
+
+.premium-btn:hover::before {
+    left: 100%;
+}
+
+/* Taste Match Progress Bar Animation */
+@keyframes fillProgress {
+    from { width: 0; }
+    to { width: var(--progress-width); }
+}
+
+.progress-bar {
+    animation: fillProgress 1s ease-out;
+}
+
+
+/* Profile Button Hover Effects */
+.profile-btn:hover .profile-avatar {
+  animation: pulse 1s infinite;
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.2);
+}
+
+/* Profile Modal Animations */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(40px) scale(0.95);
+  }
+}
+
+/* Profile Modal Overlay */
+.profile-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: 9999 !important;
+  pointer-events: all !important;
+}
+
+/* Ensure modal is always on top */
+.profile-modal {
+  position: relative !important;
+  z-index: 10000 !important;
+}
+
+/* Close button hover */
+.close-btn:hover {
+  background: linear-gradient(135deg, #e2e8f0, #cbd5e1) !important;
+  transform: rotate(90deg) scale(1.1) !important;
+}
+
+/* Edit Profile Button Hover */
+.edit-btn:hover {
+  transform: translateY(-2px) scale(1.05) !important;
+  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4) !important;
+}
+
+/* Logout Button Hover */
+.logout-btn:hover {
+  transform: translateY(-2px) scale(1.05) !important;
+  box-shadow: 0 10px 30px rgba(239, 68, 68, 0.4) !important;
+}
+
+/* Tab Button Hover */
+.tab-btn:hover {
+  background: rgba(102, 126, 234, 0.08) !important;
+}
+
+/* Smooth scrollbar for modal */
+.profile-modal::-webkit-scrollbar {
+  width: 8px;
+}
+
+.profile-modal::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 10px;
+}
+
+.profile-modal::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border-radius: 10px;
+}
+
+.profile-modal::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #764ba2, #667eea);
+}
+
+
+/* ========================================
+   PREMIUM UI ENHANCEMENTS
+   ======================================== */
+
+/* Enhanced Button Styles */
+button, .btn {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+button:not(:disabled):hover, .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+button:not(:disabled):active, .btn:active {
+    transform: translateY(0px) scale(0.98);
+}
+
+/* Pill Button Enhancement */
+button[style*="borderRadius: \"25px\""],
+button[style*="borderRadius: \"50px\""],
+.pill-btn {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+button[style*="borderRadius: \"25px\""]:hover,
+button[style*="borderRadius: \"50px\""]:hover,
+.pill-btn:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* Input Field Enhancements */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="tel"],
+textarea,
+select {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: rgba(255, 255, 255, 0.9);
+}
+
+input[type="text"]:hover,
+input[type="email"]:hover,
+input[type="password"]:hover,
+input[type="tel"]:hover,
+textarea:hover,
+select:hover {
+    background: rgba(255, 255, 255, 1);
+    border-color: rgba(102, 126, 234, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="tel"]:focus,
+textarea:focus,
+select:focus {
+    background: rgba(255, 255, 255, 1);
+    border-color: #667eea !important;
+    box-shadow: 
+        0 0 0 4px rgba(102, 126, 234, 0.1),
+        0 8px 24px rgba(102, 126, 234, 0.15) !important;
+    outline: none;
+    transform: translateY(-1px);
+}
+
+/* Card Hover Effects - Restaurant & Menu Items */
+.restaurant-card,
+[style*="borderRadius: \"15px\""][style*="boxShadow"],
+[style*="borderRadius: \"16px\""][style*="boxShadow"] {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.restaurant-card:hover,
+[style*="borderRadius: \"15px\""][style*="boxShadow"]:hover,
+[style*="borderRadius: \"16px\""][style*="boxShadow"]:hover {
+    transform: translateY(-6px) scale(1.01);
+    box-shadow: 0 16px 48px rgba(0,0,0,0.12) !important;
+}
+
+/* Image Hover Effects */
+.restaurant-card img,
+[style*="objectFit: \"cover\""] {
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.restaurant-card:hover img,
+[style*="objectFit: \"cover\""]:hover {
+    transform: scale(1.08);
+}
+
+/* Quick Action Items Enhancement */
+.quick-action-item {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.quick-action-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+    border-radius: 15px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.quick-action-item:hover::before {
+    opacity: 1;
+}
+
+.quick-action-item:hover {
+    background: rgba(102, 126, 234, 0.05) !important;
+    transform: translateY(-4px) scale(1.05) !important;
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.15);
+}
+
+/* Cuisine Filter Enhancement */
+.cuisine-filter {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.cuisine-filter::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.cuisine-filter:active::before {
+    width: 300px;
+    height: 300px;
+}
+
+.cuisine-filter:hover {
+    background: linear-gradient(135deg, #667eea, #764ba2) !important;
+    color: white !important;
+    transform: translateY(-3px) scale(1.05) !important;
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    border-color: transparent !important;
+}
+
+/* Badge Enhancements */
+[style*="borderRadius: \"15px\""][style*="padding: \"5px"],
+[style*="borderRadius: \"12px\""][style*="padding: \"4px"],
+[style*="borderRadius: \"20px\""][style*="padding: \"8px"] {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+[style*="borderRadius: \"15px\""][style*="padding: \"5px"]:hover,
+[style*="borderRadius: \"12px\""][style*="padding: \"4px"]:hover,
+[style*="borderRadius: \"20px\""][style*="padding: \"8px"]:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Modal Overlay Enhancement */
+[style*="position: \"fixed\""][style*="backgroundColor: \"rgba(0,0,0"] {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Modal Content Enhancement */
+[style*="borderRadius: \"20px\""][style*="backgroundColor: \"white\""] {
+    animation: slideUpFade 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 
+        0 25px 80px rgba(0, 0, 0, 0.2),
+        0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+@keyframes slideUpFade {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Search Bar Glow Effect */
+input[type="text"][placeholder*="Search"],
+input[type="text"][placeholder*="search"] {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+input[type="text"][placeholder*="Search"]:focus,
+input[type="text"][placeholder*="search"]:focus {
+    box-shadow: 
+        0 0 0 4px rgba(102, 126, 234, 0.15),
+        0 8px 32px rgba(102, 126, 234, 0.2),
+        0 0 20px rgba(102, 126, 234, 0.3) !important;
+}
+
+/* Gradient Button Enhancement */
+button[style*="linear-gradient"],
+.gradient-btn {
+    position: relative;
+    overflow: hidden;
+}
+
+button[style*="linear-gradient"]::after,
+.gradient-btn::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+button[style*="linear-gradient"]:active::after,
+.gradient-btn:active::after {
+    width: 400px;
+    height: 400px;
+}
+
+/* Loading Spinner Enhancement */
+[style*="animation: \"spin"] {
+    filter: drop-shadow(0 0 8px rgba(102, 126, 234, 0.5));
+}
+
+/* Hero Section Enhancement */
+[style*="background: \"linear-gradient(135deg, #667eea"] {
+    position: relative;
+    overflow: hidden;
+}
+
+[style*="background: \"linear-gradient(135deg, #667eea"]::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+    animation: float 20s ease-in-out infinite;
+}
+
+/* Quantity Button Enhancement */
+button[style*="width: \"30px\""][style*="height: \"30px\""] {
+    transition: all 0.2s ease;
+}
+
+button[style*="width: \"30px\""][style*="height: \"30px\""]:hover {
+    background: rgba(102, 126, 234, 0.1) !important;
+    transform: scale(1.2);
+}
+
+button[style*="width: \"30px\""][style*="height: \"30px\""]:active {
+    transform: scale(0.9);
+}
+
+/* Tab Button Enhancement */
+button[style*="borderBottom"],
+.tab-btn {
+    position: relative;
+}
+
+button[style*="borderBottom"]::after,
+.tab-btn::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #667eea, transparent);
+    transform: translateX(-50%);
+    transition: width 0.3s ease;
+}
+
+button[style*="borderBottom"]:hover::after,
+.tab-btn:hover::after {
+    width: 100%;
+}
+
+/* Price Tag Enhancement */
+[style*="fontSize: \"20px\""][style*="fontWeight: \"800\""],
+[style*="fontSize: \"16px\""][style*="fontWeight: \"600\""][style*="color: \"#667eea\""] {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+/* Rating Badge Enhancement */
+[style*="backgroundColor: \"#00b894\""][style*="borderRadius: \"8px\""],
+[style*="background: \"#00b894\""][style*="borderRadius: \"8px\""] {
+    box-shadow: 0 4px 12px rgba(0, 184, 148, 0.3);
+    transition: all 0.3s ease;
+}
+
+[style*="backgroundColor: \"#00b894\""][style*="borderRadius: \"8px\""]:hover,
+[style*="background: \"#00b894\""][style*="borderRadius: \"8px\""]:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(0, 184, 148, 0.4);
+}
+
+/* Delivery Time Badge Enhancement */
+[style*="backgroundColor: \"rgba(0,0,0,0.7)\""] {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Empty State Enhancement */
+[style*="textAlign: \"center\""][style*="padding: \"60px"] {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+/* Checkout Button Pulse */
+button[style*="Place Order"] {
+    animation: subtlePulse 2s ease-in-out infinite;
+}
+
+@keyframes subtlePulse {
+    0%, 100% {
+        box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+    }
+    50% {
+        box-shadow: 0 4px 20px rgba(102, 126, 234, 0.5), 0 0 30px rgba(102, 126, 234, 0.2);
+    }
+}
+
+/* Responsive Enhancements */
+@media (max-width: 768px) {
+    .premium-card:hover {
+        transform: translateY(-4px) scale(1.01);
+    }
+    
+    .quick-action-item:hover {
+        transform: translateY(-2px) scale(1.03) !important;
+    }
+    
+    .cuisine-filter:hover {
+        transform: translateY(-2px) scale(1.03) !important;
+    }
+}
+
+/* Accessibility Enhancements */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 3px solid rgba(102, 126, 234, 0.5);
+    outline-offset: 2px;
+}
+
+/* Smooth Page Transitions */
+#root > div {
+    animation: fadeIn 0.4s ease-out;
+}
+
+/* Link Hover Enhancement */
+a {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+a:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.1);
+}
+
+/* Disabled State Enhancement */
+button:disabled,
+input:disabled,
+select:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    filter: grayscale(0.5);
+}
+
+/* Selection Highlight */
+::selection {
+    background: rgba(102, 126, 234, 0.3);
+    color: #1e293b;
+}
+
+::-moz-selection {
+    background: rgba(102, 126, 234, 0.3);
+    color: #1e293b;
 }

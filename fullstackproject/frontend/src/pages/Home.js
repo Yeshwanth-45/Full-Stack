@@ -1,658 +1,800 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import RestaurantMap from "../components/RestaurantMap";
-import AIRecommendations from "../components/AIRecommendations";
-import VoiceOrdering from "../components/VoiceOrdering";
-import ARMenuViewer from "../components/ARMenuViewer";
+import LiveLocationDetector from "../components/LiveLocationDetector";
+import RewardsSystem from "../components/RewardsSystem";
+import RestaurantCard from "../components/RestaurantCard";
+import FloatingChatButton from "../components/FloatingChatButton";
 
 export default function Home() {
     const navigate = useNavigate();
     const [restaurants, setRestaurants] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
-    const [selectedLocation, setSelectedLocation] = useState("");
-    const [showMap, setShowMap] = useState(false);
-    const [showAI, setShowAI] = useState(true);
-    const [showVoice, setShowVoice] = useState(false);
-    const [showAR, setShowAR] = useState(false);
-    const [menuItems, setMenuItems] = useState([]);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [selectedCuisine, setSelectedCuisine] = useState("All");
+    const [sortBy, setSortBy] = useState("rating");
+    const [selectedLocation, setSelectedLocation] = useState("Hyderabad, Banjara Hills");
+    const [showLocationDetector, setShowLocationDetector] = useState(false);
+    const [showRewards, setShowRewards] = useState(false);
     const token = localStorage.getItem("token");
 
-    // List of available locations
     const availableLocations = [
-        "Bangalore, Indiranagar",
-        "Bangalore, Koramangala", 
-        "Bangalore, Whitefield",
-        "Hyderabad, Banjara Hills",
-        "Chennai, Anna Nagar",
-        "Mumbai, Bandra",
-        "Delhi, Connaught Place"
+        "Hyderabad, Banjara Hills", "Hyderabad, Jubilee Hills", "Hyderabad, Gachibowli",
+        "Hyderabad, Madhapur", "Hyderabad, HITEC City", "Hyderabad, Kukatpally",
+        "Mumbai, Bandra", "Mumbai, Andheri", "Mumbai, Juhu", "Mumbai, Powai",
+        "Bangalore, Koramangala", "Bangalore, Indiranagar", "Bangalore, Whitefield",
+        "Delhi, Connaught Place", "Delhi, Khan Market", "Delhi, Karol Bagh"
     ];
 
-    useEffect(() => {
-        // Only fetch restaurants if user is logged in
-        if (!token) {
+    const cuisineTypes = [
+        "All", "Indian", "Italian", "Chinese", "Thai", "Mexican", 
+        "Japanese", "Korean", "American", "South Indian", "Fast Food"
+    ];
+
+    const loadRestaurants = useCallback(async () => {
+        setLoading(true);
+        setError("");
+        
+        try {
+            const response = await fetch("http://localhost:8080/api/restaurants", {
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setRestaurants(Array.isArray(data) ? data : []);
+            } else {
+                setError("Failed to load restaurants. Please try again.");
+            }
+        } catch (err) {
+            console.error("Error loading restaurants:", err);
+            setError("Cannot connect to server. Please check if backend is running.");
+        } finally {
             setLoading(false);
-            return;
         }
+    }, [token]);
 
-        const fetchRestaurants = async () => {
-            setLoading(true);
-            try {
-                let url = "http://localhost:8080/api/restaurants";
-                if (selectedLocation) {
-                    url += `?location=${encodeURIComponent(selectedLocation)}`;
-                }
+    useEffect(() => {
+        if (token) {
+            loadRestaurants();
+        }
+    }, [token, loadRestaurants]);
 
-                const res = await fetch(url, {
-                    headers: { "Authorization": `Bearer ${token}` }
-                });
-
-                if (res.ok) {
-                    const data = await res.json();
-                    setRestaurants(Array.isArray(data) ? data : []);
-                    setError("");
-                    
-                    // Fetch menu items for AI recommendations and AR
-                    if (data.length > 0) {
-                        fetchMenuItems(data[0].id);
-                    }
-                } else if (res.status === 401 || res.status === 403) {
-                    // Token is invalid, remove it and redirect to login
-                    console.log("Token invalid, clearing localStorage");
-                    localStorage.removeItem("token");
-                    localStorage.removeItem("user");
-                    window.location.reload();
-                } else {
-                    setError("Failed to load restaurants");
-                }
-            } catch (e) {
-                console.error(e);
-                setError("Cannot connect to server");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        const fetchMenuItems = async (restaurantId) => {
-            try {
-                const res = await fetch(`http://localhost:8080/api/menus/restaurant/${restaurantId}`, {
-                    headers: { "Authorization": `Bearer ${token}` }
-                });
-                if (res.ok) {
-                    const data = await res.json();
-                    setMenuItems(Array.isArray(data) ? data : []);
-                } else if (res.status === 401 || res.status === 403) {
-                    // Token is invalid for menu items too
-                    localStorage.removeItem("token");
-                    localStorage.removeItem("user");
-                    window.location.reload();
-                }
-            } catch (e) {
-                console.error(e);
-            }
-        };
-
-        fetchRestaurants();
-    }, [token, selectedLocation]);
-
-    const handleRestaurantSelect = (restaurantId) => {
-        navigate(`/menu?restaurant=${restaurantId}`);
+    const handleLocationDetected = (locationData) => {
+        if (locationData.address) {
+            setSelectedLocation(locationData.address);
+        }
+        setShowLocationDetector(false);
     };
 
-    const handleVoiceOrder = (orderItems) => {
-        // Add voice order items to cart
-        const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-        orderItems.forEach(item => {
-            if (item.total > 0) { // Valid items only
-                const existingItem = cart.find(c => c.name === item.item);
-                if (existingItem) {
-                    existingItem.quantity += item.quantity;
-                } else {
-                    cart.push({
-                        id: Date.now() + Math.random(),
-                        name: item.item,
-                        price: item.price,
-                        quantity: item.quantity,
-                        restaurant: item.restaurant
-                    });
-                }
-            }
-        });
-        localStorage.setItem("cart", JSON.stringify(cart));
-        alert("Voice order added to cart!");
-        setShowVoice(false);
+    const handleLocationError = (errorMessage) => {
+        setError(errorMessage);
+        setShowLocationDetector(false);
     };
+
+    // Filter and sort restaurants
+    const filteredRestaurants = restaurants.filter(restaurant => {
+        const matchesSearch = !searchTerm || 
+                            restaurant.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            restaurant.cuisineType?.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesCuisine = selectedCuisine === "All" || restaurant.cuisineType === selectedCuisine;
+        return matchesSearch && matchesCuisine;
+    });
+
+    const sortedRestaurants = filteredRestaurants.sort((a, b) => {
+        switch(sortBy) {
+            case "rating":
+                return (b.rating || 0) - (a.rating || 0);
+            case "delivery-time":
+                return (a.deliveryTime || 0) - (b.deliveryTime || 0);
+            case "delivery-fee":
+                return (a.deliveryFee || 0) - (b.deliveryFee || 0);
+            case "name":
+                return a.name.localeCompare(b.name);
+            default:
+                return 0;
+        }
+    });
 
     // Show login page if not authenticated
     if (!token) {
         return (
             <div style={styles.notLoggedIn}>
                 <div style={styles.welcomeCard}>
-                    <h1 style={styles.notLoggedInTitle}>🚀 Welcome to FoodieHub</h1>
-                    <p style={styles.subtitle}>Next Generation Food Delivery Platform</p>
+                    <div style={styles.logoSection}>
+                        <h1 style={styles.logoTitle}>🍔 FoodieHub</h1>
+                        <p style={styles.logoTagline}>Order food online from India's best restaurants</p>
+                    </div>
                     
-                    <div style={styles.featuresPreview}>
+                    <div style={styles.featuresGrid}>
                         <div style={styles.featureItem}>
-                            <span style={styles.featureIcon}>🤖</span>
-                            <span>AI-Powered Recommendations</span>
+                            <div style={styles.featureIcon}>⚡</div>
+                            <h3>Lightning Fast Delivery</h3>
+                            <p>Get your food delivered in 30 minutes or less</p>
                         </div>
                         <div style={styles.featureItem}>
-                            <span style={styles.featureIcon}>🎤</span>
-                            <span>Voice Ordering System</span>
+                            <div style={styles.featureIcon}>🎯</div>
+                            <h3>Live Order Tracking</h3>
+                            <p>Track your order in real-time from kitchen to doorstep</p>
                         </div>
                         <div style={styles.featureItem}>
-                            <span style={styles.featureIcon}>📱</span>
-                            <span>AR Menu Experience</span>
+                            <div style={styles.featureIcon}>🏆</div>
+                            <h3>Rewards & Offers</h3>
+                            <p>Earn points on every order and unlock exclusive deals</p>
                         </div>
                         <div style={styles.featureItem}>
-                            <span style={styles.featureIcon}>🗺️</span>
-                            <span>Live Restaurant Mapping</span>
+                            <div style={styles.featureIcon}>🤖</div>
+                            <h3>AI Recommendations</h3>
+                            <p>Smart suggestions based on your taste and preferences</p>
                         </div>
                     </div>
                     
-                    <p style={styles.notLoggedInText}>
-                        Please login or register to experience the future of food delivery
-                    </p>
-                    
-                    <Link to="/auth" style={styles.authButton}>
-                        <span style={styles.authIcon}>🚀</span>
-                        Get Started - Login / Register
-                    </Link>
+                    <div style={styles.authButtons}>
+                        <Link to="/login" style={styles.loginBtn}>Login</Link>
+                        <Link to="/register" style={styles.registerBtn}>Sign Up</Link>
+                    </div>
                 </div>
             </div>
         );
     }
 
-    if (loading) return <div style={styles.loadingContainer}><p>Loading restaurants...</p></div>;
-    if (error) return <div style={styles.errorContainer}><p>{error}</p></div>;
+    if (loading) return <div style={styles.loadingContainer}><div style={styles.loader}></div><p>Loading delicious restaurants...</p></div>;
+    if (error) return <div style={styles.errorContainer}><p>{error}</p><button onClick={loadRestaurants} style={styles.retryBtn}>Retry</button></div>;
 
     return (
         <div style={styles.container}>
-            <h1 style={styles.title}>🚀 FoodieHub - Next Generation Food Delivery</h1>
-            
-            {/* Revolutionary Features Panel */}
-            <div style={styles.featuresPanel}>
-                <h2 style={styles.featuresTitle}>🌟 Revolutionary Features</h2>
-                <div style={styles.featureButtons}>
-                    <button 
-                        onClick={() => setShowAI(!showAI)}
-                        style={{...styles.featureBtn, ...(showAI ? styles.featureBtnActive : {})}}
-                    >
-                        🤖 AI Recommendations
-                    </button>
-                    <button 
-                        onClick={() => setShowVoice(!showVoice)}
-                        style={{...styles.featureBtn, ...(showVoice ? styles.featureBtnActive : {})}}
-                    >
-                        🎤 Voice Ordering
-                    </button>
-                    <button 
-                        onClick={() => setShowAR(!showAR)}
-                        style={{...styles.featureBtn, ...(showAR ? styles.featureBtnActive : {})}}
-                    >
-                        📱 AR Menu View
-                    </button>
-                    <button 
-                        onClick={() => setShowMap(!showMap)}
-                        style={{...styles.featureBtn, ...(showMap ? styles.featureBtnActive : {})}}
-                    >
-                        🗺️ Live Map
-                    </button>
-                </div>
-            </div>
-
-            {/* AI Recommendations */}
-            {showAI && (
-                <AIRecommendations 
-                    userPreferences={{ spicy: true, vegetarian: false }}
-                    orderHistory={[]}
-                    currentWeather="cold"
-                />
-            )}
-
-            {/* Voice Ordering */}
-            {showVoice && (
-                <VoiceOrdering onOrderComplete={handleVoiceOrder} />
-            )}
-
-            {/* AR Menu Viewer */}
-            {showAR && menuItems.length > 0 && (
-                <ARMenuViewer menuItems={menuItems} />
-            )}
-            
-            {/* Location Filter */}
-            <div style={styles.filterSection}>
-                <label style={styles.filterLabel}>
-                    <span style={styles.filterIcon}>📍</span>
-                    Select Location:
-                </label>
-                <select 
-                    value={selectedLocation} 
-                    onChange={(e) => setSelectedLocation(e.target.value)}
-                    style={styles.filterSelect}
-                >
-                    <option value="">All Locations</option>
-                    {availableLocations.map(loc => (
-                        <option key={loc} value={loc}>{loc}</option>
-                    ))}
-                </select>
-                <button 
-                    onClick={() => setShowMap(!showMap)}
-                    style={styles.mapToggleBtn}
-                >
-                    {showMap ? '📋 List View' : '🗺️ Map View'}
-                </button>
-            </div>
-
-            {/* Map View */}
-            {showMap && (
-                <div style={styles.mapContainer}>
-                    <RestaurantMap 
-                        restaurants={restaurants}
-                        onRestaurantSelect={handleRestaurantSelect}
-                    />
-                </div>
-            )}
-
-            <div style={styles.grid}>
-                {restaurants.map(r => (
-                    <div key={r.id} style={styles.restaurantCard}>
-                        <div style={styles.cardImage}>
-                            {r.imageUrl ? (
-                                <img 
-                                    src={r.imageUrl} 
-                                    alt={r.name}
-                                    style={styles.restaurantImage}
-                                    onError={(e) => {
-                                        e.target.style.display = 'none';
-                                        e.target.nextSibling.style.display = 'flex';
-                                    }}
-                                />
-                            ) : null}
-                            <div style={styles.placeholderIcon}>
-                                {r.name}
-                            </div>
+            {/* Hero Section - Swiggy Style */}
+            <div style={styles.heroSection}>
+                <div style={styles.heroContent}>
+                    <h1 style={styles.heroTitle}>Order food online in {selectedLocation.split(',')[0]}</h1>
+                    <p style={styles.heroSubtitle}>From restaurants to your doorstep</p>
+                    
+                    {/* Location and Search Bar */}
+                    <div style={styles.searchContainer}>
+                        <div style={styles.locationSection}>
+                            <div style={styles.locationIcon}>📍</div>
+                            <select 
+                                value={selectedLocation} 
+                                onChange={(e) => setSelectedLocation(e.target.value)}
+                                style={styles.locationSelect}
+                            >
+                                {availableLocations.map(loc => (
+                                    <option key={loc} value={loc}>{loc}</option>
+                                ))}
+                            </select>
+                            <button 
+                                onClick={() => setShowLocationDetector(true)}
+                                style={styles.detectBtn}
+                                title="Detect my location"
+                            >
+                                🎯
+                            </button>
                         </div>
-                        <h3 style={styles.restaurantName}>{r.name}</h3>
-                        <p style={styles.description}>{r.description || "Delicious food awaits you"}</p>
-                        {r.location && (
-                            <p style={styles.location}>
-                                <span style={styles.locationIcon}>📍</span>
-                                {r.location}
-                            </p>
-                        )}
-                        <div style={styles.restaurantInfo}>
-                            <p style={styles.rating}>
-                                <span style={styles.ratingIcon}>⭐</span>
-                                {r.rating || 4.5}
-                            </p>
-                            <p style={styles.deliveryTime}>
-                                <span style={styles.timeIcon}>🕒</span>
-                                {r.deliveryTime || 30} min
-                            </p>
-                            <p style={styles.deliveryFee}>
-                                <span style={styles.feeIcon}>🚚</span>
-                                ₹{r.deliveryFee || 40}
-                            </p>
+                        
+                        <div style={styles.searchSection}>
+                            <input 
+                                type="text"
+                                placeholder="Search for restaurants, cuisines, or dishes..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                style={styles.searchInput}
+                            />
+                            <button style={styles.searchBtn}>🔍</button>
                         </div>
-                        <Link 
-                            to={`/menu?restaurant=${r.id}`} 
-                            style={styles.viewMenuBtn}
-                        >
-                            View Menu & Order
-                        </Link>
                     </div>
-                ))}
+                </div>
             </div>
-            {restaurants.length === 0 && <p style={styles.empty}>No restaurants available in this location</p>}
+
+            {/* Quick Actions */}
+            <div style={styles.quickActions}>
+                <div style={styles.quickActionItem} className="quick-action-item" onClick={() => setShowRewards(true)}>
+                    <div style={styles.quickIcon}>🏆</div>
+                    <span>Rewards</span>
+                </div>
+                <div style={styles.quickActionItem} className="quick-action-item">
+                    <div style={styles.quickIcon}>🎤</div>
+                    <span>Voice Order</span>
+                </div>
+                <div style={styles.quickActionItem} className="quick-action-item">
+                    <div style={styles.quickIcon}>📱</div>
+                    <span>AR Menu</span>
+                </div>
+                <div style={styles.quickActionItem} className="quick-action-item">
+                    <div style={styles.quickIcon}>🗺️</div>
+                    <span>Live Map</span>
+                </div>
+            </div>
+
+            {/* Filters Section */}
+            <div style={styles.filtersSection}>
+                <div style={styles.filtersContainer}>
+                    <div style={styles.cuisineFilters}>
+                        {cuisineTypes.map(cuisine => (
+                            <button
+                                key={cuisine}
+                                onClick={() => setSelectedCuisine(cuisine)}
+                                className="cuisine-filter"
+                                style={{
+                                    ...styles.cuisineFilter,
+                                    ...(selectedCuisine === cuisine ? styles.cuisineFilterActive : {})
+                                }}
+                            >
+                                {cuisine}
+                            </button>
+                        ))}
+                    </div>
+                    
+                    <div style={styles.sortSection}>
+                        <label style={styles.sortLabel}>Sort by:</label>
+                        <select 
+                            value={sortBy} 
+                            onChange={(e) => setSortBy(e.target.value)}
+                            style={styles.sortSelect}
+                        >
+                            <option value="rating">Rating</option>
+                            <option value="delivery-time">Delivery Time</option>
+                            <option value="delivery-fee">Delivery Fee</option>
+                            <option value="name">Name</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            {/* Restaurants Grid */}
+            <div style={styles.restaurantsSection}>
+                <div style={styles.sectionHeader}>
+                    <h2 style={styles.sectionTitle}>
+                        {selectedLocation ? `Restaurants in ${selectedLocation}` : "Popular Restaurants"}
+                    </h2>
+                    <span style={styles.restaurantCount}>{sortedRestaurants.length} restaurants</span>
+                </div>
+                
+                <div style={styles.restaurantGrid}>
+                    {sortedRestaurants.map(restaurant => (
+                        <RestaurantCard 
+                            key={restaurant.id} 
+                            restaurant={restaurant} 
+                            showTrustIndicators={true}
+                        />
+                    ))}
+                </div>
+            </div>
+
+            {/* Modals */}
+            {showLocationDetector && (
+                <div style={styles.modalOverlay}>
+                    <div style={styles.modalContent}>
+                        <div style={styles.modalHeader}>
+                            <h3 style={styles.modalTitle}>📍 Detect Your Location</h3>
+                            <button 
+                                onClick={() => setShowLocationDetector(false)}
+                                style={styles.closeButton}
+                            >
+                                ✕
+                            </button>
+                        </div>
+                        <LiveLocationDetector 
+                            onLocationDetected={handleLocationDetected}
+                            onLocationError={handleLocationError}
+                        />
+                    </div>
+                </div>
+            )}
+
+            {showRewards && (
+                <div style={styles.modalOverlay}>
+                    <div style={styles.modalContent}>
+                        <div style={styles.modalHeader}>
+                            <h3 style={styles.modalTitle}>🏆 Rewards & Offers</h3>
+                            <button 
+                                onClick={() => setShowRewards(false)}
+                                style={styles.closeButton}
+                            >
+                                ✕
+                            </button>
+                        </div>
+                        <RewardsSystem />
+                    </div>
+                </div>
+            )}
+
+            {/* Floating Chat Button */}
+            {token && <FloatingChatButton restaurantName="FoodieHub Support" />}
         </div>
     );
 }
 
 const styles = {
     container: {
-        padding: "40px 20px",
-        maxWidth: "1200px",
-        margin: "0 auto",
-        background: "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)",
-        minHeight: "100vh"
+        minHeight: "100vh",
+        backgroundColor: "#f8f9fa"
     },
-    title: {
-        fontSize: "36px",
-        fontWeight: "800",
-        marginBottom: "40px",
-        background: "linear-gradient(135deg, #ff6b6b, #ee5a24)",
-        WebkitBackgroundClip: "text",
-        WebkitTextFillColor: "transparent",
-        textAlign: "center",
-        letterSpacing: "-1px"
-    },
-    featuresPanel: {
+    
+    // Welcome Page Styles
+    notLoggedIn: {
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
         background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        padding: "20px"
+    },
+    welcomeCard: {
+        backgroundColor: "white",
         borderRadius: "20px",
-        padding: "24px",
-        marginBottom: "32px",
+        padding: "60px 40px",
+        maxWidth: "900px",
+        textAlign: "center",
+        boxShadow: "0 20px 60px rgba(0,0,0,0.1)"
+    },
+    logoSection: {
+        marginBottom: "50px"
+    },
+    logoTitle: {
+        fontSize: "3.5rem",
+        color: "#2d3436",
+        marginBottom: "10px",
+        fontWeight: "800"
+    },
+    logoTagline: {
+        fontSize: "1.3rem",
+        color: "#636e72",
+        marginBottom: "0"
+    },
+    featuresGrid: {
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+        gap: "30px",
+        marginBottom: "50px"
+    },
+    featureItem: {
+        padding: "30px 20px",
+        backgroundColor: "#f8f9fa",
+        borderRadius: "15px",
+        textAlign: "center"
+    },
+    featureIcon: {
+        fontSize: "3rem",
+        marginBottom: "15px"
+    },
+    authButtons: {
+        display: "flex",
+        gap: "20px",
+        justifyContent: "center"
+    },
+    loginBtn: {
+        display: "inline-block",
+        backgroundColor: "#00b894",
+        color: "white",
+        padding: "15px 40px",
+        borderRadius: "50px",
+        textDecoration: "none",
+        fontSize: "1.1rem",
+        fontWeight: "600",
+        transition: "all 0.3s ease",
+        boxShadow: "0 4px 15px rgba(0,184,148,0.3)"
+    },
+    registerBtn: {
+        display: "inline-block",
+        backgroundColor: "transparent",
+        color: "#00b894",
+        padding: "15px 40px",
+        borderRadius: "50px",
+        textDecoration: "none",
+        fontSize: "1.1rem",
+        fontWeight: "600",
+        border: "2px solid #00b894",
+        transition: "all 0.3s ease"
+    },
+
+    // Hero Section
+    heroSection: {
+        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        padding: "80px 20px",
         color: "white",
         textAlign: "center"
     },
-    featuresTitle: {
-        margin: "0 0 20px 0",
-        fontSize: "24px",
+    heroContent: {
+        maxWidth: "1000px",
+        margin: "0 auto"
+    },
+    heroTitle: {
+        fontSize: "2.8rem",
+        marginBottom: "15px",
         fontWeight: "700"
     },
-    featureButtons: {
+    heroSubtitle: {
+        fontSize: "1.3rem",
+        marginBottom: "50px",
+        opacity: "0.9"
+    },
+    searchContainer: {
         display: "flex",
-        gap: "12px",
+        gap: "20px",
+        maxWidth: "800px",
+        margin: "0 auto",
         flexWrap: "wrap",
         justifyContent: "center"
     },
-    featureBtn: {
-        padding: "12px 20px",
-        background: "rgba(255, 255, 255, 0.2)",
-        color: "white",
-        border: "2px solid rgba(255, 255, 255, 0.3)",
-        borderRadius: "25px",
-        cursor: "pointer",
-        fontWeight: "600",
-        fontSize: "14px",
-        transition: "all 0.3s ease",
-        backdropFilter: "blur(10px)"
-    },
-    featureBtnActive: {
-        background: "rgba(255, 255, 255, 0.3)",
-        borderColor: "rgba(255, 255, 255, 0.6)",
-        transform: "translateY(-2px)",
-        boxShadow: "0 8px 20px rgba(0, 0, 0, 0.2)"
-    },
-    filterSection: {
-        marginBottom: "40px",
+    locationSection: {
         display: "flex",
         alignItems: "center",
-        justifyContent: "center",
-        gap: "20px",
-        flexWrap: "wrap",
-        background: "white",
-        padding: "24px",
-        borderRadius: "20px",
-        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
-        backdropFilter: "blur(10px)"
-    },
-    filterLabel: {
-        fontSize: "16px",
-        fontWeight: "700",
-        color: "#1e293b",
-        display: "flex",
-        alignItems: "center",
-        gap: "8px"
-    },
-    filterIcon: {
-        fontSize: "20px"
-    },
-    filterSelect: {
-        padding: "12px 20px",
-        fontSize: "15px",
-        border: "2px solid #e2e8f0",
-        borderRadius: "12px",
-        cursor: "pointer",
-        minWidth: "280px",
         backgroundColor: "white",
-        color: "#1e293b",
-        fontWeight: "600",
-        transition: "all 0.3s ease",
-        outline: "none"
+        borderRadius: "50px",
+        padding: "5px",
+        minWidth: "250px"
     },
-    mapToggleBtn: {
-        padding: "12px 20px",
-        background: "linear-gradient(135deg, #10b981, #059669)",
+    locationIcon: {
+        fontSize: "1.2rem",
+        padding: "15px",
+        color: "#667eea"
+    },
+    locationSelect: {
+        border: "none",
+        outline: "none",
+        fontSize: "1rem",
+        color: "#2d3436",
+        backgroundColor: "transparent",
+        flex: 1,
+        padding: "10px"
+    },
+    detectBtn: {
+        backgroundColor: "#00b894",
         color: "white",
         border: "none",
-        borderRadius: "12px",
+        borderRadius: "50%",
+        width: "45px",
+        height: "45px",
         cursor: "pointer",
-        fontWeight: "700",
-        fontSize: "14px",
-        transition: "all 0.3s ease",
-        boxShadow: "0 4px 16px rgba(16, 185, 129, 0.3)"
+        fontSize: "1.2rem",
+        margin: "5px"
     },
-    mapContainer: {
-        marginBottom: "40px"
-    },
-    grid: {
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
-        gap: "32px"
-    },
-    restaurantCard: {
-        background: "white",
-        borderRadius: "20px",
-        overflow: "hidden",
-        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
-        transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-        cursor: "pointer",
-        border: "1px solid rgba(255, 255, 255, 0.2)"
-    },
-    cardImage: {
-        background: "linear-gradient(135deg, #ff6b6b 0%, #ee5a24 50%, #ff9ff3 100%)",
-        height: "200px",
+    searchSection: {
         display: "flex",
         alignItems: "center",
-        justifyContent: "center",
+        backgroundColor: "white",
+        borderRadius: "50px",
+        padding: "5px",
+        minWidth: "350px",
+        flex: 1
+    },
+    searchInput: {
+        border: "none",
+        outline: "none",
+        fontSize: "1rem",
+        color: "#2d3436",
+        backgroundColor: "transparent",
+        flex: 1,
+        padding: "15px 20px"
+    },
+    searchBtn: {
+        backgroundColor: "#667eea",
         color: "white",
+        border: "none",
+        borderRadius: "50%",
+        width: "45px",
+        height: "45px",
+        cursor: "pointer",
+        fontSize: "1.2rem",
+        margin: "5px"
+    },
+
+    // Quick Actions
+    quickActions: {
+        display: "flex",
+        justifyContent: "center",
+        gap: "30px",
+        padding: "30px 20px",
+        backgroundColor: "white",
+        borderBottom: "1px solid #e9ecef",
+        flexWrap: "wrap"
+    },
+    quickActionItem: {
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        padding: "20px",
+        borderRadius: "15px",
+        cursor: "pointer",
+        transition: "all 0.3s ease",
+        minWidth: "100px"
+    },
+    quickIcon: {
+        fontSize: "2rem",
+        marginBottom: "10px"
+    },
+
+    // Filters Section
+    filtersSection: {
+        backgroundColor: "white",
+        padding: "20px",
+        borderBottom: "1px solid #e9ecef"
+    },
+    filtersContainer: {
+        maxWidth: "1200px",
+        margin: "0 auto",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        flexWrap: "wrap",
+        gap: "20px"
+    },
+    cuisineFilters: {
+        display: "flex",
+        gap: "10px",
+        flexWrap: "wrap"
+    },
+    cuisineFilter: {
+        padding: "8px 20px",
+        border: "1px solid #ddd",
+        borderRadius: "25px",
+        backgroundColor: "white",
+        cursor: "pointer",
+        fontSize: "0.9rem",
+        transition: "all 0.3s ease"
+    },
+    cuisineFilterActive: {
+        backgroundColor: "#667eea",
+        color: "white",
+        border: "1px solid #667eea"
+    },
+    sortSection: {
+        display: "flex",
+        alignItems: "center",
+        gap: "10px"
+    },
+    sortLabel: {
+        fontSize: "0.9rem",
+        color: "#636e72",
+        fontWeight: "500"
+    },
+    sortSelect: {
+        padding: "8px 15px",
+        border: "1px solid #ddd",
+        borderRadius: "8px",
+        fontSize: "0.9rem",
+        outline: "none"
+    },
+
+    // Restaurants Section
+    restaurantsSection: {
+        padding: "40px 20px",
+        maxWidth: "1200px",
+        margin: "0 auto"
+    },
+    sectionHeader: {
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: "30px"
+    },
+    sectionTitle: {
+        fontSize: "1.8rem",
+        color: "#2d3436",
+        fontWeight: "600",
+        margin: "0"
+    },
+    restaurantCount: {
+        color: "#636e72",
+        fontSize: "1rem"
+    },
+    restaurantGrid: {
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
+        gap: "25px"
+    },
+    restaurantCard: {
+        backgroundColor: "white",
+        borderRadius: "15px",
+        overflow: "hidden",
+        boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+        transition: "all 0.3s ease",
+        cursor: "pointer",
+        border: "1px solid #f1f2f6"
+    },
+    restaurantImageContainer: {
         position: "relative",
+        height: "200px",
         overflow: "hidden"
     },
     restaurantImage: {
         width: "100%",
         height: "100%",
         objectFit: "cover",
+        transition: "transform 0.3s ease"
+    },
+    restaurantBadges: {
         position: "absolute",
-        top: 0,
-        left: 0
-    },
-    placeholderIcon: {
-        fontSize: "18px",
-        fontWeight: "700",
-        textAlign: "center",
-        background: "rgba(255, 255, 255, 0.2)",
-        padding: "16px 24px",
-        borderRadius: "12px",
-        backdropFilter: "blur(10px)",
-        position: "relative",
-        zIndex: 1
-    },
-    restaurantName: {
-        padding: "20px 20px 8px 20px",
-        margin: "0",
-        fontSize: "22px",
-        fontWeight: "700",
-        color: "#1e293b",
-        letterSpacing: "-0.5px"
-    },
-    description: {
-        padding: "0 20px 12px 20px",
-        margin: "0",
-        fontSize: "14px",
-        color: "#64748b",
-        minHeight: "40px",
-        lineHeight: "1.5"
-    },
-    location: {
-        padding: "0 20px 8px 20px",
-        margin: "0",
-        fontSize: "13px",
-        color: "#ff6b6b",
-        fontWeight: "600",
+        top: "15px",
+        left: "15px",
         display: "flex",
-        alignItems: "center",
-        gap: "6px"
+        flexDirection: "column",
+        gap: "8px"
     },
-    locationIcon: {
-        fontSize: "14px"
+    discountBadge: {
+        backgroundColor: "#00b894",
+        color: "white",
+        padding: "5px 12px",
+        borderRadius: "15px",
+        fontSize: "0.8rem",
+        fontWeight: "600"
+    },
+    topRatedBadge: {
+        backgroundColor: "#fdcb6e",
+        color: "#2d3436",
+        padding: "5px 12px",
+        borderRadius: "15px",
+        fontSize: "0.8rem",
+        fontWeight: "600"
+    },
+    deliveryTimeOverlay: {
+        position: "absolute",
+        bottom: "15px",
+        right: "15px",
+        backgroundColor: "rgba(0,0,0,0.7)",
+        color: "white",
+        padding: "8px 12px",
+        borderRadius: "20px",
+        fontSize: "0.9rem",
+        fontWeight: "500"
     },
     restaurantInfo: {
+        padding: "20px"
+    },
+    restaurantHeader: {
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "flex-start",
+        marginBottom: "10px"
+    },
+    restaurantName: {
+        fontSize: "1.3rem",
+        color: "#2d3436",
+        margin: "0",
+        fontWeight: "600",
+        flex: 1
+    },
+    rating: {
+        display: "flex",
+        alignItems: "center",
+        gap: "5px",
+        backgroundColor: "#00b894",
+        color: "white",
+        padding: "5px 10px",
+        borderRadius: "8px",
+        fontSize: "0.9rem",
+        fontWeight: "600"
+    },
+    ratingIcon: {
+        fontSize: "0.8rem"
+    },
+    ratingValue: {
+        fontSize: "0.9rem"
+    },
+    restaurantCuisine: {
+        color: "#636e72",
+        fontSize: "0.95rem",
+        margin: "5px 0",
+        fontWeight: "500"
+    },
+    restaurantLocation: {
+        color: "#74b9ff",
+        fontSize: "0.85rem",
+        margin: "5px 0"
+    },
+    restaurantFooter: {
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-        padding: "0 20px 16px 20px",
-        gap: "12px"
+        marginTop: "15px",
+        paddingTop: "15px",
+        borderTop: "1px solid #f1f2f6"
     },
-    rating: {
-        margin: "0",
-        fontSize: "13px",
-        color: "#f59e0b",
-        fontWeight: "700",
+    deliveryInfo: {
         display: "flex",
-        alignItems: "center",
-        gap: "4px"
-    },
-    ratingIcon: {
-        fontSize: "14px"
-    },
-    deliveryTime: {
-        margin: "0",
-        fontSize: "13px",
-        color: "#10b981",
-        fontWeight: "600",
-        display: "flex",
-        alignItems: "center",
-        gap: "4px"
-    },
-    timeIcon: {
-        fontSize: "14px"
+        flexDirection: "column",
+        gap: "5px"
     },
     deliveryFee: {
-        margin: "0",
-        fontSize: "13px",
-        color: "#6366f1",
-        fontWeight: "600",
-        display: "flex",
-        alignItems: "center",
-        gap: "4px"
-    },
-    feeIcon: {
-        fontSize: "14px"
+        fontSize: "0.85rem",
+        color: "#636e72"
     },
     viewMenuBtn: {
-        display: "block",
-        padding: "16px 20px",
-        margin: "0 20px 20px 20px",
-        background: "linear-gradient(135deg, #ff6b6b, #ee5a24)",
+        backgroundColor: "#667eea",
         color: "white",
-        textDecoration: "none",
-        borderRadius: "12px",
-        fontWeight: "700",
-        textAlign: "center",
-        transition: "all 0.3s ease",
-        boxShadow: "0 4px 16px rgba(255, 107, 107, 0.3)"
+        border: "none",
+        padding: "10px 20px",
+        borderRadius: "25px",
+        fontSize: "0.9rem",
+        fontWeight: "600",
+        cursor: "pointer",
+        transition: "all 0.3s ease"
     },
-    // New Welcome Page Styles
-    notLoggedIn: {
-        background: "linear-gradient(135deg, #ff6b6b 0%, #ee5a24 25%, #ff9ff3 50%, #54a0ff 75%, #5f27cd 100%)",
-        minHeight: "calc(100vh - 80px)",
+
+    // Loading and Error States
+    loadingContainer: {
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        minHeight: "60vh",
+        color: "#636e72"
+    },
+    loader: {
+        width: "50px",
+        height: "50px",
+        border: "4px solid #f1f2f6",
+        borderTop: "4px solid #667eea",
+        borderRadius: "50%",
+        animation: "spin 1s linear infinite",
+        marginBottom: "20px"
+    },
+    errorContainer: {
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        minHeight: "50vh",
+        color: "#e17055",
+        fontSize: "1.1rem",
+        textAlign: "center"
+    },
+    retryBtn: {
+        backgroundColor: "#667eea",
+        color: "white",
+        border: "none",
+        padding: "12px 25px",
+        borderRadius: "25px",
+        fontSize: "1rem",
+        fontWeight: "600",
+        cursor: "pointer",
+        marginTop: "20px"
+    },
+
+    // Modal Styles
+    modalOverlay: {
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: "rgba(0,0,0,0.5)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: "40px 20px"
+        zIndex: 1000,
+        padding: "20px"
     },
-    welcomeCard: {
-        background: "rgba(255, 255, 255, 0.15)",
-        backdropFilter: "blur(20px)",
-        borderRadius: "24px",
-        padding: "48px 40px",
-        textAlign: "center",
+    modalContent: {
+        backgroundColor: "white",
+        borderRadius: "20px",
         maxWidth: "600px",
         width: "100%",
-        border: "1px solid rgba(255, 255, 255, 0.2)",
-        boxShadow: "0 20px 40px rgba(0, 0, 0, 0.1)"
+        maxHeight: "80vh",
+        overflow: "auto"
     },
-    notLoggedInTitle: {
-        fontSize: "48px",
-        fontWeight: "800",
-        marginBottom: "12px",
-        color: "white",
-        letterSpacing: "-1px",
-        textShadow: "0 2px 4px rgba(0, 0, 0, 0.1)"
-    },
-    subtitle: {
-        fontSize: "20px",
-        fontWeight: "600",
-        color: "rgba(255, 255, 255, 0.9)",
-        marginBottom: "32px",
-        letterSpacing: "0.5px"
-    },
-    featuresPreview: {
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-        gap: "16px",
-        marginBottom: "32px"
-    },
-    featureItem: {
+    modalHeader: {
         display: "flex",
+        justifyContent: "space-between",
         alignItems: "center",
-        gap: "12px",
-        padding: "16px",
-        background: "rgba(255, 255, 255, 0.1)",
-        borderRadius: "12px",
-        color: "white",
-        fontWeight: "600",
-        fontSize: "14px",
-        border: "1px solid rgba(255, 255, 255, 0.2)"
+        padding: "20px 30px",
+        borderBottom: "1px solid #e9ecef"
     },
-    featureIcon: {
-        fontSize: "24px"
+    modalTitle: {
+        fontSize: "1.3rem",
+        color: "#2d3436",
+        margin: "0",
+        fontWeight: "600"
     },
-    notLoggedInText: {
-        fontSize: "18px",
-        fontWeight: "500",
-        color: "rgba(255, 255, 255, 0.9)",
-        marginBottom: "32px",
-        lineHeight: "1.6"
-    },
-    authButton: {
-        display: "inline-flex",
-        alignItems: "center",
-        gap: "12px",
-        padding: "16px 32px",
-        background: "rgba(255, 255, 255, 0.2)",
-        color: "white",
-        textDecoration: "none",
-        borderRadius: "50px",
-        fontWeight: "700",
-        fontSize: "18px",
-        transition: "all 0.3s ease",
-        border: "2px solid rgba(255, 255, 255, 0.3)",
-        backdropFilter: "blur(10px)",
-        boxShadow: "0 8px 20px rgba(0, 0, 0, 0.1)"
-    },
-    authIcon: {
-        fontSize: "20px"
-    },
-    loadingContainer: {
-        textAlign: "center",
-        padding: "80px 20px",
-        color: "#64748b",
-        background: "white",
-        borderRadius: "20px",
-        margin: "40px",
-        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)"
-    },
-    errorContainer: {
-        textAlign: "center",
-        padding: "80px 20px",
-        color: "#dc2626",
-        background: "white",
-        borderRadius: "20px",
-        margin: "40px",
-        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)"
-    },
-    empty: {
-        textAlign: "center",
-        padding: "60px",
-        color: "#64748b",
-        background: "white",
-        borderRadius: "20px",
-        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
-        fontSize: "16px",
-        fontWeight: "500"
+    closeButton: {
+        background: "none",
+        border: "none",
+        fontSize: "1.5rem",
+        cursor: "pointer",
+        color: "#636e72",
+        padding: "5px"
     }
 };

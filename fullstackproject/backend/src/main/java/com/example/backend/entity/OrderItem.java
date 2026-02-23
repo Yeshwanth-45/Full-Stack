@@ -5,7 +5,6 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "order_items")
 public class OrderItem {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -24,16 +23,9 @@ public class OrderItem {
     @Column(nullable = false)
     private Double price;
 
-    public OrderItem() {
-    }
+    private String specialInstructions;
 
-    public OrderItem(Order order, MenuItem menuItem, Integer quantity, Double price) {
-        this.order = order;
-        this.menuItem = menuItem;
-        this.quantity = quantity;
-        this.price = price;
-    }
-
+    // Getters and Setters
     public Long getId() {
         return id;
     }
@@ -72,5 +64,13 @@ public class OrderItem {
 
     public void setPrice(Double price) {
         this.price = price;
+    }
+
+    public String getSpecialInstructions() {
+        return specialInstructions;
+    }
+
+    public void setSpecialInstructions(String specialInstructions) {
+        this.specialInstructions = specialInstructions;
     }
 }

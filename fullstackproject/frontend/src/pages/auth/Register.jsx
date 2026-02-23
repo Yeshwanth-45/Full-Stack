@@ -13,7 +13,9 @@ import {
   Alert,
   Paper,
   IconButton,
-  InputAdornment
+  InputAdornment,
+  FormControlLabel,
+  Checkbox
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import api from '../../services/mockApi';

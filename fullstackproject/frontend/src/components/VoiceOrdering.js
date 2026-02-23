@@ -210,8 +210,8 @@ export default function VoiceOrdering({ onOrderComplete }) {
                     <div style={styles.confirmingState}>
                         <h3 style={styles.confirmTitle}>Order Summary</h3>
                         <div style={styles.orderItems}>
-                            {orderSummary.map((item, index) => (
-                                <div key={index} style={styles.orderItem}>
+                            {orderSummary.map((item) => (
+                                <div key={`${item.item}-${item.restaurant}-${item.quantity}`} style={styles.orderItem}>
                                     <div style={styles.itemDetails}>
                                         <span style={styles.itemName}>{item.item}</span>
                                         <span style={styles.itemRestaurant}>{item.restaurant}</span>

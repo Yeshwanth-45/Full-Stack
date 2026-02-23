@@ -2,50 +2,70 @@ package com.example.backend.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
-@SuppressWarnings("JpaDataSourceORMInspection")
 @Entity
-@Table(name = "Orders")
+@Table(name = "orders")
 public class Order {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Logged-in user's email (from JWT)
-    private String userEmail;
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-    // Order status
-    private String status;
+    @ManyToOne
+    @JoinColumn(name = "restaurant_id", nullable = false)
+    private Restaurant restaurant;
 
-    // Total price (optional but useful)
-    private double totalAmount;
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderItem> items = new ArrayList<>();
 
-    // New fields for detailed breakdown
-    private double subtotal;
-    private double deliveryFee;
-    private double tax;
-    private String couponCode;
+    @Column(nullable = false)
+    private Double total;
 
-    // Tracking fields
-    private LocalDateTime createdAt = LocalDateTime.now();
-    private LocalDateTime updatedAt = LocalDateTime.now();
-    
-    // Delivery tracking fields
+    @Column(nullable = false)
+    private Double deliveryFee;
+
+    @Column(nullable = false)
+    private Double platformFee;
+
+    @Column(nullable = false)
+    private Double tax;
+
+    private Double discount = 0.0;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private OrderStatus status = OrderStatus.PENDING;
+
+    @Column(nullable = false)
     private String deliveryAddress;
+
     private Double deliveryLatitude;
     private Double deliveryLongitude;
-    private String driverName;
-    private String driverPhone;
-    private Double driverLatitude;
-    private Double driverLongitude;
-    private LocalDateTime estimatedDeliveryTime;
-    private String trackingNotes;
 
-    public Order() {
-    }
+    private String deliveryPartnerName;
+    private String deliveryPartnerPhone;
+    private Double deliveryPartnerRating;
 
-    // Getters & Setters
+    @Column(nullable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    private LocalDateTime confirmedAt;
+    private LocalDateTime preparingAt;
+    private LocalDateTime readyAt;
+    private LocalDateTime outForDeliveryAt;
+    private LocalDateTime deliveredAt;
+    private LocalDateTime cancelledAt;
+
+    private Integer estimatedDeliveryTime; // in minutes
+    private String cancellationReason;
+    private String specialInstructions;
+
+    // Getters and Setters
     public Long getId() {
         return id;
     }
@@ -54,77 +74,77 @@ public class Order {
         this.id = id;
     }
 
-    public String getUserEmail() {
-        return userEmail;
+    public User getUser() {
+        return user;
     }
 
-    public void setUserEmail(String userEmail) {
-        this.userEmail = userEmail;
+    public void setUser(User user) {
+        this.user = user;
     }
 
-    public String getStatus() {
-        return status;
+    public Restaurant getRestaurant() {
+        return restaurant;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
-        this.updatedAt = LocalDateTime.now();
+    public void setRestaurant(Restaurant restaurant) {
+        this.restaurant = restaurant;
     }
 
-    public double getTotalAmount() {
-        return totalAmount;
+    public List<OrderItem> getItems() {
+        return items;
     }
 
-    public void setTotalAmount(double totalAmount) {
-        this.totalAmount = totalAmount;
+    public void setItems(List<OrderItem> items) {
+        this.items = items;
     }
 
-    public double getSubtotal() {
-        return subtotal;
+    public Double getTotal() {
+        return total;
     }
 
-    public void setSubtotal(double subtotal) {
-        this.subtotal = subtotal;
+    public void setTotal(Double total) {
+        this.total = total;
     }
 
-    public double getDeliveryFee() {
+    public Double getDeliveryFee() {
         return deliveryFee;
     }
 
-    public void setDeliveryFee(double deliveryFee) {
+    public void setDeliveryFee(Double deliveryFee) {
         this.deliveryFee = deliveryFee;
     }
 
-    public double getTax() {
+    public Double getPlatformFee() {
+        return platformFee;
+    }
+
+    public void setPlatformFee(Double platformFee) {
+        this.platformFee = platformFee;
+    }
+
+    public Double getTax() {
         return tax;
     }
 
-    public void setTax(double tax) {
+    public void setTax(Double tax) {
         this.tax = tax;
     }
 
-    public String getCouponCode() {
-        return couponCode;
+    public Double getDiscount() {
+        return discount;
     }
 
-    public void setCouponCode(String couponCode) {
-        this.couponCode = couponCode;
+    public void setDiscount(Double discount) {
+        this.discount = discount;
     }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
+    public OrderStatus getStatus() {
+        return status;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
+    public void setStatus(OrderStatus status) {
+        this.status = status;
+        updateStatusTimestamp(status);
     }
 
     public String getDeliveryAddress() {
@@ -151,51 +171,142 @@ public class Order {
         this.deliveryLongitude = deliveryLongitude;
     }
 
-    public String getDriverName() {
-        return driverName;
+    public String getDeliveryPartnerName() {
+        return deliveryPartnerName;
     }
 
-    public void setDriverName(String driverName) {
-        this.driverName = driverName;
+    public void setDeliveryPartnerName(String deliveryPartnerName) {
+        this.deliveryPartnerName = deliveryPartnerName;
     }
 
-    public String getDriverPhone() {
-        return driverPhone;
+    public String getDeliveryPartnerPhone() {
+        return deliveryPartnerPhone;
     }
 
-    public void setDriverPhone(String driverPhone) {
-        this.driverPhone = driverPhone;
+    public void setDeliveryPartnerPhone(String deliveryPartnerPhone) {
+        this.deliveryPartnerPhone = deliveryPartnerPhone;
     }
 
-    public Double getDriverLatitude() {
-        return driverLatitude;
+    public Double getDeliveryPartnerRating() {
+        return deliveryPartnerRating;
     }
 
-    public void setDriverLatitude(Double driverLatitude) {
-        this.driverLatitude = driverLatitude;
+    public void setDeliveryPartnerRating(Double deliveryPartnerRating) {
+        this.deliveryPartnerRating = deliveryPartnerRating;
     }
 
-    public Double getDriverLongitude() {
-        return driverLongitude;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
-    public void setDriverLongitude(Double driverLongitude) {
-        this.driverLongitude = driverLongitude;
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 
-    public LocalDateTime getEstimatedDeliveryTime() {
+    public LocalDateTime getConfirmedAt() {
+        return confirmedAt;
+    }
+
+    public void setConfirmedAt(LocalDateTime confirmedAt) {
+        this.confirmedAt = confirmedAt;
+    }
+
+    public LocalDateTime getPreparingAt() {
+        return preparingAt;
+    }
+
+    public void setPreparingAt(LocalDateTime preparingAt) {
+        this.preparingAt = preparingAt;
+    }
+
+    public LocalDateTime getReadyAt() {
+        return readyAt;
+    }
+
+    public void setReadyAt(LocalDateTime readyAt) {
+        this.readyAt = readyAt;
+    }
+
+    public LocalDateTime getOutForDeliveryAt() {
+        return outForDeliveryAt;
+    }
+
+    public void setOutForDeliveryAt(LocalDateTime outForDeliveryAt) {
+        this.outForDeliveryAt = outForDeliveryAt;
+    }
+
+    public LocalDateTime getDeliveredAt() {
+        return deliveredAt;
+    }
+
+    public void setDeliveredAt(LocalDateTime deliveredAt) {
+        this.deliveredAt = deliveredAt;
+    }
+
+    public LocalDateTime getCancelledAt() {
+        return cancelledAt;
+    }
+
+    public void setCancelledAt(LocalDateTime cancelledAt) {
+        this.cancelledAt = cancelledAt;
+    }
+
+    public Integer getEstimatedDeliveryTime() {
         return estimatedDeliveryTime;
     }
 
-    public void setEstimatedDeliveryTime(LocalDateTime estimatedDeliveryTime) {
+    public void setEstimatedDeliveryTime(Integer estimatedDeliveryTime) {
         this.estimatedDeliveryTime = estimatedDeliveryTime;
     }
 
-    public String getTrackingNotes() {
-        return trackingNotes;
+    public String getCancellationReason() {
+        return cancellationReason;
     }
 
-    public void setTrackingNotes(String trackingNotes) {
-        this.trackingNotes = trackingNotes;
+    public void setCancellationReason(String cancellationReason) {
+        this.cancellationReason = cancellationReason;
+    }
+
+    public String getSpecialInstructions() {
+        return specialInstructions;
+    }
+
+    public void setSpecialInstructions(String specialInstructions) {
+        this.specialInstructions = specialInstructions;
+    }
+
+    private void updateStatusTimestamp(OrderStatus status) {
+        LocalDateTime now = LocalDateTime.now();
+        switch (status) {
+            case CONFIRMED:
+                this.confirmedAt = now;
+                break;
+            case PREPARING:
+                this.preparingAt = now;
+                break;
+            case READY:
+                this.readyAt = now;
+                break;
+            case OUT_FOR_DELIVERY:
+                this.outForDeliveryAt = now;
+                break;
+            case DELIVERED:
+                this.deliveredAt = now;
+                break;
+            case CANCELLED:
+                this.cancelledAt = now;
+                break;
+        }
+    }
+
+    public enum OrderStatus {
+        PENDING,
+        CONFIRMED,
+        PREPARING,
+        READY,
+        OUT_FOR_DELIVERY,
+        NEARBY,
+        DELIVERED,
+        CANCELLED
     }
 }

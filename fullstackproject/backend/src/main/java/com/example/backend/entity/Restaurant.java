@@ -1,7 +1,9 @@
 package com.example.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import java.util.List;
+import java.util.ArrayList;
 
 @Entity
 @Table(name = "restaurants")
@@ -14,44 +16,33 @@ public class Restaurant {
     @Column(nullable = false)
     private String name;
 
-    @Column
+    @Column(unique = true)
+    private String email;
+    
+    private String password;
+    
+    private String ownerName;
+    
+    private String phone;
+
+    @Column(length = 1000)
     private String description;
 
-    @Column
     private String address;
-
-    @Column
     private String city;
-
-    @Column
     private Double rating = 4.5;
-
-    @Column
     private String imageUrl;
-
-    @Column
     private String cuisineType;
-
-    @Column
     private Integer deliveryTime = 30; // minutes
-
-    @Column
     private Double deliveryFee = 40.0;
-
-    @Column
     private Boolean isOpen = true;
-
-    @Column
     private String location; // City, Area, Pincode
-
-    @Column
     private Double latitude;
-
-    @Column
     private Double longitude;
 
-    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
-    private List<MenuItem> menuItems;
+    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<MenuItem> menuItems = new ArrayList<>();
 
     public Restaurant() {
     }
@@ -64,123 +55,61 @@ public class Restaurant {
         this.cuisineType = cuisineType;
     }
 
-    public Long getId() {
-        return id;
-    }
+    // Getters and Setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
-    public String getName() {
-        return name;
-    }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
 
-    public String getDescription() {
-        return description;
-    }
+    public String getOwnerName() { return ownerName; }
+    public void setOwnerName(String ownerName) { this.ownerName = ownerName; }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
 
-    public String getAddress() {
-        return address;
-    }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 
-    public void setAddress(String address) {
-        this.address = address;
-    }
+    public String getAddress() { return address; }
+    public void setAddress(String address) { this.address = address; }
 
-    public String getCity() {
-        return city;
-    }
+    public String getCity() { return city; }
+    public void setCity(String city) { this.city = city; }
 
-    public void setCity(String city) {
-        this.city = city;
-    }
+    public Double getRating() { return rating; }
+    public void setRating(Double rating) { this.rating = rating; }
 
-    public Double getRating() {
-        return rating;
-    }
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 
-    public void setRating(Double rating) {
-        this.rating = rating;
-    }
+    public String getCuisineType() { return cuisineType; }
+    public void setCuisineType(String cuisineType) { this.cuisineType = cuisineType; }
 
-    public String getImageUrl() {
-        return imageUrl;
-    }
+    public Integer getDeliveryTime() { return deliveryTime; }
+    public void setDeliveryTime(Integer deliveryTime) { this.deliveryTime = deliveryTime; }
 
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
-    }
+    public Double getDeliveryFee() { return deliveryFee; }
+    public void setDeliveryFee(Double deliveryFee) { this.deliveryFee = deliveryFee; }
 
-    public String getCuisineType() {
-        return cuisineType;
-    }
+    public Boolean getIsOpen() { return isOpen; }
+    public void setIsOpen(Boolean isOpen) { this.isOpen = isOpen; }
 
-    public void setCuisineType(String cuisineType) {
-        this.cuisineType = cuisineType;
-    }
+    public String getLocation() { return location; }
+    public void setLocation(String location) { this.location = location; }
 
-    public Integer getDeliveryTime() {
-        return deliveryTime;
-    }
+    public Double getLatitude() { return latitude; }
+    public void setLatitude(Double latitude) { this.latitude = latitude; }
 
-    public void setDeliveryTime(Integer deliveryTime) {
-        this.deliveryTime = deliveryTime;
-    }
+    public Double getLongitude() { return longitude; }
+    public void setLongitude(Double longitude) { this.longitude = longitude; }
 
-    public Double getDeliveryFee() {
-        return deliveryFee;
-    }
-
-    public void setDeliveryFee(Double deliveryFee) {
-        this.deliveryFee = deliveryFee;
-    }
-
-    public Boolean getIsOpen() {
-        return isOpen;
-    }
-
-    public void setIsOpen(Boolean isOpen) {
-        this.isOpen = isOpen;
-    }
-
-    public String getLocation() {
-        return location;
-    }
-
-    public void setLocation(String location) {
-        this.location = location;
-    }
-
-    public Double getLatitude() {
-        return latitude;
-    }
-
-    public void setLatitude(Double latitude) {
-        this.latitude = latitude;
-    }
-
-    public Double getLongitude() {
-        return longitude;
-    }
-
-    public void setLongitude(Double longitude) {
-        this.longitude = longitude;
-    }
-
-    public List<MenuItem> getMenuItems() {
-        return menuItems;
-    }
-
-    public void setMenuItems(List<MenuItem> menuItems) {
-        this.menuItems = menuItems;
-    }
+    public List<MenuItem> getMenuItems() { return menuItems; }
+    public void setMenuItems(List<MenuItem> menuItems) { this.menuItems = menuItems; }
 }

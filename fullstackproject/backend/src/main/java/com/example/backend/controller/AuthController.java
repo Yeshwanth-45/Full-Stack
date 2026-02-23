@@ -75,4 +75,27 @@ public class AuthController {
             return ResponseEntity.status(401).body(error);
         }
     }
+
+    @GetMapping("/validate")
+    public ResponseEntity<?> validateToken(@RequestHeader("Authorization") String authHeader) {
+        try {
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                Map<String, String> error = new HashMap<>();
+                error.put("message", "Invalid authorization header");
+                return ResponseEntity.status(401).body(error);
+            }
+
+            String token = authHeader.substring(7);
+            String email = authService.validateToken(token);
+            
+            Map<String, String> response = new HashMap<>();
+            response.put("email", email);
+            response.put("valid", "true");
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("message", e.getMessage());
+            return ResponseEntity.status(401).body(error);
+        }
+    }
 }

@@ -496,7 +496,7 @@ const styles = {
         color: 'white'
     },
     arSelectorActive: {
-        borderColor: '#ff6b6b'
+        border: '2px solid #ff6b6b'
     },
     selectorImage: {
         width: '40px',

@@ -12,113 +12,68 @@ public class Review {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "restaurant_id")
+    @JoinColumn(name = "restaurant_id", nullable = false)
     private Restaurant restaurant;
 
     @ManyToOne
-    @JoinColumn(name = "menu_item_id", nullable = true)
-    private MenuItem menuItem;
+    @JoinColumn(name = "order_id")
+    private Order order;
 
     @Column(nullable = false)
     private Integer rating; // 1-5 stars
 
-    @Column(columnDefinition = "TEXT")
+    @Column(length = 1000)
     private String comment;
 
-    @Column
+    private Integer foodRating; // 1-5
+    private Integer deliveryRating; // 1-5
+    private Integer packagingRating; // 1-5
+
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    @Column
-    private Boolean isVerifiedPurchase = false;
-
-    @Column
-    private String reviewType; // RESTAURANT, FOOD, DELIVERY
-
-    // Constructors
     public Review() {}
 
-    public Review(User user, Restaurant restaurant, Integer rating, String comment) {
+    public Review(User user, Restaurant restaurant, Order order, Integer rating, String comment) {
         this.user = user;
         this.restaurant = restaurant;
+        this.order = order;
         this.rating = rating;
         this.comment = comment;
-        this.reviewType = "RESTAURANT";
+        this.createdAt = LocalDateTime.now();
     }
 
     // Getters and Setters
-    public Long getId() {
-        return id;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
 
-    public User getUser() {
-        return user;
-    }
+    public Restaurant getRestaurant() { return restaurant; }
+    public void setRestaurant(Restaurant restaurant) { this.restaurant = restaurant; }
 
-    public void setUser(User user) {
-        this.user = user;
-    }
+    public Order getOrder() { return order; }
+    public void setOrder(Order order) { this.order = order; }
 
-    public Restaurant getRestaurant() {
-        return restaurant;
-    }
+    public Integer getRating() { return rating; }
+    public void setRating(Integer rating) { this.rating = rating; }
 
-    public void setRestaurant(Restaurant restaurant) {
-        this.restaurant = restaurant;
-    }
+    public String getComment() { return comment; }
+    public void setComment(String comment) { this.comment = comment; }
 
-    public MenuItem getMenuItem() {
-        return menuItem;
-    }
+    public Integer getFoodRating() { return foodRating; }
+    public void setFoodRating(Integer foodRating) { this.foodRating = foodRating; }
 
-    public void setMenuItem(MenuItem menuItem) {
-        this.menuItem = menuItem;
-    }
+    public Integer getDeliveryRating() { return deliveryRating; }
+    public void setDeliveryRating(Integer deliveryRating) { this.deliveryRating = deliveryRating; }
 
-    public Integer getRating() {
-        return rating;
-    }
+    public Integer getPackagingRating() { return packagingRating; }
+    public void setPackagingRating(Integer packagingRating) { this.packagingRating = packagingRating; }
 
-    public void setRating(Integer rating) {
-        this.rating = rating;
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public Boolean getIsVerifiedPurchase() {
-        return isVerifiedPurchase;
-    }
-
-    public void setIsVerifiedPurchase(Boolean isVerifiedPurchase) {
-        this.isVerifiedPurchase = isVerifiedPurchase;
-    }
-
-    public String getReviewType() {
-        return reviewType;
-    }
-
-    public void setReviewType(String reviewType) {
-        this.reviewType = reviewType;
-    }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import BillBreakdown from "../components/BillBreakdown";
 
 export default function Cart() {
     const navigate = useNavigate();
@@ -134,12 +135,10 @@ export default function Cart() {
                         ))}
                     </div>
 
-                        <div style={styles.summary}>
-                        <h2 style={styles.summaryTitle}>Order Summary</h2>
-                        
+                    <div style={styles.summary}>
                         {/* Delivery Address Section */}
                         <div style={styles.addressSection}>
-                            <label style={styles.addressLabel}>Delivery Address *</label>
+                            <label style={styles.addressLabel}>📍 Delivery Address *</label>
                             <textarea
                                 value={deliveryAddress}
                                 onChange={(e) => setDeliveryAddress(e.target.value)}
@@ -152,42 +151,12 @@ export default function Cart() {
                             </small>
                         </div>
 
-                        <div style={styles.summaryRow}>
-                            <span>Subtotal:</span>
-                            <span>₹{total.toFixed(2)}</span>
-                        </div>
-                <div style={styles.summaryRow}>
-                    <span>Coupon:</span>
-                    <div style={{display: 'flex', gap:8}}>
-                        <input placeholder="Enter coupon" value={couponCode} onChange={e=>setCouponCode(e.target.value)} style={{padding:'6px', borderRadius:6, border:'1px solid #ddd'}} />
-                        <button onClick={() => {
-                            const code = (couponCode || "").trim().toUpperCase();
-                            if (code === "NEWUSER10") {
-                                setDiscount(total * 0.10);
-                                alert("Applied 10% off");
-                            } else if (code === "FLAT50") {
-                                setDiscount(50);
-                                alert("Applied ₹50 off");
-                            } else {
-                                setDiscount(0);
-                                alert("Invalid coupon");
-                            }
-                        }} style={{padding:'6px 10px', borderRadius:6, background:'#667eea', color:'#fff', border:'none'}}>Apply</button>
-                    </div>
-                </div>
-                        <div style={styles.summaryRow}>
-                            <span>Delivery Fee:</span>
-                            <span>₹{deliveryFee.toFixed(2)}</span>
-                        </div>
-                        <div style={styles.summaryRow}>
-                            <span>Tax:</span>
-                            <span>₹{tax.toFixed(2)}</span>
-                        </div>
-                        <div style={styles.divider}></div>
-                        <div style={{...styles.summaryRow, ...styles.totalRow}}>
-                            <span>Total:</span>
-                            <span>₹{(Math.max(0, total - discount) + deliveryFee + tax).toFixed(2)}</span>
-                        </div>
+                        {/* Enhanced Bill Breakdown Component */}
+                        <BillBreakdown 
+                            cartItems={cart}
+                            deliveryAddress={deliveryAddress}
+                        />
+
                         <button
                             onClick={handleCheckout}
                             disabled={loading || !deliveryAddress.trim()}
@@ -196,7 +165,7 @@ export default function Cart() {
                                 opacity: (loading || !deliveryAddress.trim()) ? 0.6 : 1
                             }}
                         >
-                            {loading ? "Processing..." : "Place Order"}
+                            {loading ? "Processing..." : `Place Order • ₹${(Math.max(0, total - discount) + deliveryFee + tax).toFixed(0)}`}
                         </button>
                     </div>
                 </div>
@@ -315,11 +284,10 @@ const styles = {
         fontWeight: "600"
     },
     summary: {
-        background: "white",
-        borderRadius: "12px",
-        padding: "24px",
-        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-        height: "fit-content"
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '20px',
+        height: 'fit-content'
     },
     summaryTitle: {
         margin: "0 0 20px 0",
@@ -328,9 +296,11 @@ const styles = {
         color: "#1a1a1a"
     },
     addressSection: {
-        marginBottom: "20px",
-        paddingBottom: "20px",
-        borderBottom: "1px solid #e0e0e0"
+        background: 'white',
+        borderRadius: '16px',
+        padding: '20px',
+        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+        border: '1px solid #e2e8f0'
     },
     addressLabel: {
         display: "block",
@@ -374,15 +344,15 @@ const styles = {
     },
     checkoutBtn: {
         width: "100%",
-        padding: "12px 16px",
-        marginTop: "20px",
+        padding: "16px 20px",
         background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
         color: "white",
         border: "none",
-        borderRadius: "8px",
-        fontSize: "16px",
+        borderRadius: "16px",
+        fontSize: "18px",
         fontWeight: "700",
         cursor: "pointer",
-        transition: "all 0.3s ease"
+        transition: "all 0.3s ease",
+        boxShadow: "0 4px 20px rgba(102, 126, 234, 0.3)"
     }
 };

@@ -30,7 +30,7 @@ public class AuthService {
         }
 
         // Check if user already exists
-        if (userRepository.findByEmail(email).isPresent()) {
+        if (userRepository.existsByEmail(email)) {
             throw new RuntimeException("Email already registered");
         }
 
@@ -74,5 +74,20 @@ public class AuthService {
 
         // Generate and return JWT token
         return JwtUtil.generateToken(user.getEmail());
+    }
+
+    public String validateToken(String token) {
+        try {
+            // Validate JWT token and extract email
+            String email = JwtUtil.validateToken(token);
+            
+            // Check if user still exists
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            
+            return user.getEmail();
+        } catch (Exception e) {
+            throw new RuntimeException("Invalid or expired token");
+        }
     }
 }

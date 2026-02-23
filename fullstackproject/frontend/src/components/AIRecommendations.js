@@ -96,7 +96,7 @@ export default function AIRecommendations({ userPreferences, orderHistory, curre
                         
                         <div style={styles.itemsList}>
                             {rec.items.map((item, index) => (
-                                <div key={index} style={styles.recommendedItem}>
+                                <div key={`${rec.id}-${item.name}-${index}`} style={styles.recommendedItem}>
                                     <div style={styles.itemInfo}>
                                         <span style={styles.itemName}>{item.name}</span>
                                         <span style={styles.restaurantName}>{item.restaurant}</span>

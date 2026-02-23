@@ -22,14 +22,30 @@ public class JwtUtil {
                 .compact();
     }
 
-    public static boolean validateToken(String token) {
+    public static String validateToken(String token) {
         try {
-            Jwts.parser()
+            Claims claims = Jwts.parser()
                     .verifyWith(SECRET_KEY)
                     .build()
-                    .parseSignedClaims(token);
-            return true;
+                    .parseSignedClaims(token)
+                    .getPayload();
+            
+            // Check if token is expired
+            if (claims.getExpiration().before(new Date())) {
+                throw new JwtException("Token expired");
+            }
+            
+            return claims.getSubject(); // Return email
         } catch (JwtException e) {
+            throw new RuntimeException("Invalid or expired token: " + e.getMessage());
+        }
+    }
+
+    public static boolean isTokenValid(String token) {
+        try {
+            validateToken(token);
+            return true;
+        } catch (Exception e) {
             return false;
         }
     }

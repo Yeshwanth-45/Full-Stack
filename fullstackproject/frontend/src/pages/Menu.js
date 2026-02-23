@@ -183,10 +183,10 @@ export default function Menu() {
                         />
                         <div style={styles.restaurantOverlay}>
                             <button onClick={() => navigate("/")} style={styles.backBtn}>
-                                ← Back
+                                ← 🏠 Back
                             </button>
                             <button onClick={() => navigate("/cart")} style={styles.cartBtn}>
-                                🛒 {cartCount}
+                                🛒 Cart ({cartCount})
                             </button>
                         </div>
                     </div>
@@ -217,24 +217,28 @@ export default function Menu() {
                 
                 <div style={styles.quickFilters}>
                     <button 
+                        key="filter-veg"
                         onClick={() => setFilterVeg(!filterVeg)}
                         style={{...styles.quickFilterBtn, ...(filterVeg ? styles.quickFilterActive : {})}}
                     >
                         🥬 Veg Only
                     </button>
                     <button 
+                        key="filter-bestseller"
                         onClick={() => setFilterBestseller(!filterBestseller)}
                         style={{...styles.quickFilterBtn, ...(filterBestseller ? styles.quickFilterActive : {})}}
                     >
                         ⭐ Bestseller
                     </button>
                     <button 
+                        key="filter-spicy"
                         onClick={() => setFilterSpicy(!filterSpicy)}
                         style={{...styles.quickFilterBtn, ...(filterSpicy ? styles.quickFilterActive : {})}}
                     >
                         🌶️ Spicy
                     </button>
                     <button 
+                        key="filter-gluten-free"
                         onClick={() => setFilterGlutenFree(!filterGlutenFree)}
                         style={{...styles.quickFilterBtn, ...(filterGlutenFree ? styles.quickFilterActive : {})}}
                     >
@@ -287,30 +291,35 @@ export default function Menu() {
                         <h4 style={styles.filterTitle}>Sort By</h4>
                         <div style={styles.filterOptions}>
                             <button
+                                key="sort-name"
                                 onClick={() => setSortBy("name")}
                                 style={{...styles.filterOption, ...(sortBy === "name" ? styles.filterOptionActive : {})}}
                             >
                                 📝 Name (A-Z)
                             </button>
                             <button
+                                key="sort-price-low"
                                 onClick={() => setSortBy("price-low")}
                                 style={{...styles.filterOption, ...(sortBy === "price-low" ? styles.filterOptionActive : {})}}
                             >
                                 💰 Price (Low to High)
                             </button>
                             <button
+                                key="sort-price-high"
                                 onClick={() => setSortBy("price-high")}
                                 style={{...styles.filterOption, ...(sortBy === "price-high" ? styles.filterOptionActive : {})}}
                             >
                                 💎 Price (High to Low)
                             </button>
                             <button
+                                key="sort-prep-time"
                                 onClick={() => setSortBy("prep-time")}
                                 style={{...styles.filterOption, ...(sortBy === "prep-time" ? styles.filterOptionActive : {})}}
                             >
                                 ⚡ Fastest First
                             </button>
                             <button
+                                key="sort-rating"
                                 onClick={() => setSortBy("rating")}
                                 style={{...styles.filterOption, ...(sortBy === "rating" ? styles.filterOptionActive : {})}}
                             >
@@ -358,7 +367,7 @@ export default function Menu() {
 
                     <div style={styles.filterActions}>
                         <button onClick={clearAllFilters} style={styles.clearFiltersBtn}>
-                            🗑️ Clear All Filters
+                            ❌ Clear All Filters
                         </button>
                         <button onClick={() => setShowFilters(false)} style={styles.applyFiltersBtn}>
                             ✅ Apply Filters
@@ -438,7 +447,7 @@ export default function Menu() {
                                     onClick={() => addToCart(item)}
                                     style={styles.addBtn}
                                 >
-                                    ADD +
+                                    ➕ ADD
                                 </button>
                             </div>
                         </div>
@@ -620,7 +629,7 @@ const styles = {
     quickFilterActive: {
         background: "#10b981",
         color: "white",
-        borderColor: "#10b981"
+        border: "2px solid #10b981"
     },
     moreFiltersBtn: {
         padding: "10px 16px",
@@ -671,7 +680,7 @@ const styles = {
     filterOptionActive: {
         background: "#ff6b6b",
         color: "white",
-        borderColor: "#ff6b6b"
+        border: "2px solid #ff6b6b"
     },
     filterActions: {
         display: "flex",

@@ -1,12 +1,40 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import CustomerSupport from "../components/CustomerSupport";
+import RefundWorkflow from "../components/RefundWorkflow";
+import ReviewSystem from "../components/ReviewSystem";
+import FloatingChatButton from "../components/FloatingChatButton";
 
 export default function Orders() {
     const navigate = useNavigate();
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [showSupport, setShowSupport] = useState(false);
+    const [showRefund, setShowRefund] = useState(false);
+    const [showReview, setShowReview] = useState(false);
+    const [selectedOrder, setSelectedOrder] = useState(null);
     const token = localStorage.getItem("token");
+
+    const handleRefundRequest = (orderId) => {
+        const order = orders.find(o => o.id === orderId);
+        if (order) {
+            setSelectedOrder({
+                ...order,
+                restaurant: 'Spicy Hub', // Mock restaurant name
+                createdAt: order.createdAt || new Date().toISOString()
+            });
+            setShowRefund(true);
+        }
+    };
+
+    const handleReviewOrder = (orderId) => {
+        const order = orders.find(o => o.id === orderId);
+        if (order) {
+            setSelectedOrder(order);
+            setShowReview(true);
+        }
+    };
 
     const handleCancelOrder = async (orderId) => {
         if (!window.confirm('Are you sure you want to cancel this order?')) {
@@ -111,7 +139,7 @@ export default function Orders() {
                                         <strong style={styles.itemsTitle}>Items:</strong>
                                         <ul style={styles.itemsList}>
                                             {order.items.map((item, idx) => (
-                                                <li key={idx} style={styles.itemLi}>
+                                                <li key={item.id || item.itemId || `${order.id}-item-${idx}`} style={styles.itemLi}>
                                                     {item.name || item.itemId} <span style={styles.qty}>x{item.quantity}</span>
                                                 </li>
                                             ))}
@@ -124,14 +152,33 @@ export default function Orders() {
                                         onClick={() => navigate(`/tracking/${order.id}`)}
                                         style={styles.trackButton}
                                     >
-                                        Track Order
+                                        📍 Track Order
                                     </button>
+                                    
+                                    {order.status === "DELIVERED" && (
+                                        <button
+                                            onClick={() => handleReviewOrder(order.id)}
+                                            style={styles.reviewButton}
+                                        >
+                                            ⭐ Review
+                                        </button>
+                                    )}
+                                    
                                     {(order.status === "PENDING" || order.status === "CONFIRMED") && (
                                         <button
                                             onClick={() => handleCancelOrder(order.id)}
                                             style={styles.cancelButton}
                                         >
-                                            Cancel Order
+                                            ❌ Cancel
+                                        </button>
+                                    )}
+                                    
+                                    {(order.status === "DELIVERED" || order.status === "CANCELLED") && (
+                                        <button
+                                            onClick={() => handleRefundRequest(order.id)}
+                                            style={styles.refundButton}
+                                        >
+                                            💰 Refund
                                         </button>
                                     )}
                                 </div>
@@ -140,6 +187,57 @@ export default function Orders() {
                     ))}
                 </div>
             )}
+
+            {/* Help & Support Button */}
+            <div style={styles.supportSection}>
+                <button
+                    onClick={() => setShowSupport(true)}
+                    style={styles.supportButton}
+                >
+                    🎧 Need Help? Contact Support
+                </button>
+            </div>
+
+            {/* Modals */}
+            {showSupport && (
+                <CustomerSupport onClose={() => setShowSupport(false)} />
+            )}
+
+            {showRefund && selectedOrder && (
+                <RefundWorkflow
+                    orderId={selectedOrder.id}
+                    orderDetails={selectedOrder}
+                    onClose={() => {
+                        setShowRefund(false);
+                        setSelectedOrder(null);
+                    }}
+                    onRefundRequest={(refundData) => {
+                        console.log('Refund requested:', refundData);
+                        // In real app, update order status
+                    }}
+                />
+            )}
+
+            {showReview && selectedOrder && (
+                <ReviewSystem
+                    orderId={selectedOrder.id}
+                    restaurantId={selectedOrder.restaurantId || 1}
+                    onClose={() => {
+                        setShowReview(false);
+                        setSelectedOrder(null);
+                    }}
+                    onSubmit={(reviewData) => {
+                        console.log('Review submitted:', reviewData);
+                        // In real app, save review
+                    }}
+                />
+            )}
+
+            {/* Floating Chat Button */}
+            <FloatingChatButton 
+                orderId={selectedOrder?.id} 
+                restaurantName="FoodieHub Support" 
+            />
         </div>
     );
 }
@@ -272,13 +370,15 @@ const styles = {
     },
     actionButtons: {
         display: "flex",
-        gap: "10px",
+        gap: "8px",
         marginTop: "16px",
         paddingTop: "16px",
-        borderTop: "1px solid #e0e0e0"
+        borderTop: "1px solid #e0e0e0",
+        flexWrap: "wrap"
     },
     trackButton: {
         flex: 1,
+        minWidth: "120px",
         padding: "10px 16px",
         background: "#667eea",
         color: "white",
@@ -286,18 +386,63 @@ const styles = {
         borderRadius: "6px",
         cursor: "pointer",
         fontWeight: "600",
-        fontSize: "14px"
+        fontSize: "12px"
     },
-    cancelButton: {
+    reviewButton: {
         flex: 1,
+        minWidth: "120px",
         padding: "10px 16px",
-        background: "#ff6b6b",
+        background: "#f59e0b",
         color: "white",
         border: "none",
         borderRadius: "6px",
         cursor: "pointer",
         fontWeight: "600",
-        fontSize: "14px"
+        fontSize: "12px"
+    },
+    refundButton: {
+        flex: 1,
+        minWidth: "120px",
+        padding: "10px 16px",
+        background: "#10b981",
+        color: "white",
+        border: "none",
+        borderRadius: "6px",
+        cursor: "pointer",
+        fontWeight: "600",
+        fontSize: "12px"
+    },
+    cancelButton: {
+        flex: 1,
+        minWidth: "120px",
+        padding: "10px 16px",
+        background: "#ef4444",
+        color: "white",
+        border: "none",
+        borderRadius: "6px",
+        cursor: "pointer",
+        fontWeight: "600",
+        fontSize: "12px"
+    },
+    supportSection: {
+        textAlign: "center",
+        marginTop: "40px",
+        padding: "30px",
+        background: "linear-gradient(135deg, #667eea, #764ba2)",
+        borderRadius: "16px",
+        color: "white"
+    },
+    supportButton: {
+        padding: "16px 32px",
+        background: "rgba(255, 255, 255, 0.2)",
+        color: "white",
+        border: "2px solid rgba(255, 255, 255, 0.3)",
+        borderRadius: "12px",
+        fontSize: "16px",
+        fontWeight: "700",
+        cursor: "pointer",
+        transition: "all 0.3s ease",
+        backdropFilter: "blur(10px)"
     },
     loadingContainer: {
         textAlign: "center",

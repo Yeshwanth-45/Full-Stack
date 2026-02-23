@@ -1,53 +1,81 @@
 # FoodieHub - Full Stack Food Delivery Application
 
-A modern, full-stack food delivery application built with **React** frontend and **Spring Boot** backend, featuring **Email/Password Authentication**, **Google Maps Integration**, and **Real Restaurant Images**.
+A modern, full-stack food delivery application built with **React** frontend and **Spring Boot** backend, featuring **Email/Password Authentication**, **MySQL Database**, **Advanced Features** like Wallet, Referrals, and Subscriptions.
 
-## 🚀 Features Completed
+## 🚀 Quick Start
 
-### ✅ Core Application
-- **Email/Password Authentication** - Secure login and registration system
-- **Restaurant Management** - Browse restaurants by location and cuisine  
-- **Menu System** - View detailed menus with categories and pricing
+### Initialize Sample Data (Choose One Method)
+
+**Method 1: HTML Page (Easiest!)**
+1. Open `INITIALIZE_DATA.html` in your browser
+2. Click "Initialize Sample Data" button
+3. Done! ✅
+
+**Method 2: Using curl**
+```bash
+curl -X POST http://localhost:8080/api/init-data
+```
+
+This will add:
+- 8 Restaurants (Pizza Palace, Spice Garden, Burger Barn, Sushi Station, Taco Fiesta, Noodle House, Biryani Blues, Cafe Delight)
+- 48 Menu Items (6 per restaurant)
+- 7 Promo Codes (FIRST50, SAVE20, WELCOME, etc.)
+
+See `QUICK_START.md` for detailed instructions.
+
+## 🎯 Features Completed
+
+### ✅ Core Features
+- **Email/Password Authentication** - Secure JWT-based authentication
+- **Restaurant Management** - Browse 8 sample restaurants with real data
+- **Menu System** - 48 menu items with categories, pricing, and images
 - **Shopping Cart** - Add/remove items, quantity management
-- **Order Management** - Place orders, view order history
-- **User Profiles** - Manage user information and addresses
+- **Order Management** - Place orders, view order history, track status
+- **User Profiles** - Enhanced profile modal with 5 tabs
 
-### ✅ Advanced Features  
-- **Live Order Tracking** - Real-time GPS tracking with Google Maps
-- **Location-Based Services** - Filter restaurants by city/area
-- **Restaurant Images** - High-quality Unsplash images for all restaurants
-- **Food Images** - Appetizing food photography for all menu items
-- **Google Maps Integration** - Interactive maps with restaurant locations
-- **Modern UI Design** - Glass morphism effects, gradients, contemporary styling
-- **Responsive Design** - Works seamlessly across desktop and mobile devices
+### ✅ Customer Features
+- **Address Management** - Save multiple delivery addresses with default selection
+- **Favorites System** - Save favorite restaurants and menu items
+- **Review & Rating** - Rate orders with overall, food, delivery, packaging ratings
+- **Promo Codes** - Apply discount coupons (7 sample codes included)
+- **Order Tracking** - Real-time order status updates
+
+### ✅ Advanced Features (Backend Ready)
+- **Digital Wallet** - Balance tracking, transactions, loyalty points
+- **Referral System** - Generate codes, track referrals, earn rewards
+- **Subscription Plans** - Basic/Premium/Gold monthly plans
+- **Wallet Transactions** - Complete transaction history
+
+### ✅ Restaurant Features
+- **Restaurant Authentication** - Separate login for restaurant owners
+- **Restaurant Dashboard** - Manage orders and menu items
+- **Menu Management** - Add/edit/delete menu items
 
 ### ✅ Technical Features
-- **RESTful APIs** - Comprehensive backend API with proper authentication
-- **Database Integration** - H2 database with JPA/Hibernate  
-- **Real-time Updates** - WebSocket integration for live tracking
-- **Image Handling** - Optimized image loading with fallbacks
-- **Location Services** - Coordinate-based restaurant positioning
-- **Error Handling** - Graceful error handling and user feedback
+- **RESTful APIs** - Comprehensive backend with 11+ controllers
+- **MySQL Database** - 13 tables with proper relationships
+- **JPA/Hibernate** - Entity management with repositories
+- **JWT Security** - Secure authentication and authorization
+- **React Portal** - Modal rendering for better UX
+- **Modern UI** - Glassmorphism effects, gradients, responsive design
 
-## 📍 Restaurant Locations
+## 📍 Sample Restaurants (Hyderabad)
 
-The application includes **7 restaurants** across **5 major Indian cities**:
-
-### Bangalore (3 locations)
-- **Spicy Hub** (Indiranagar) - Authentic Indian Cuisine
-- **Pizza Palace** (Koramangala) - Italian Pizzeria  
-- **Burger Barn** (Whitefield) - Premium American Burgers
-
-### Other Cities
-- **Chinese Wok** (Hyderabad, Banjara Hills) - Chinese Cuisine
-- **South Indian Café** (Chennai, Anna Nagar) - Traditional South Indian
-- **Taco Fiesta** (Mumbai, Bandra) - Mexican Street Food
-- **Sushi Zen** (Delhi, Connaught Place) - Japanese Sushi & Asian
+### 8 Restaurants Included:
+1. **Pizza Palace** (Italian) - 4.5⭐ - MG Road, Banjara Hills
+2. **Spice Garden** (Indian) - 4.7⭐ - Jubilee Hills Road
+3. **Burger Barn** (American) - 4.3⭐ - Gachibowli
+4. **Sushi Station** (Japanese) - 4.8⭐ - HITEC City
+5. **Taco Fiesta** (Mexican) - 4.4⭐ - Madhapur
+6. **Noodle House** (Chinese) - 4.6⭐ - Kondapur
+7. **Biryani Blues** (Indian) - 4.9⭐ - Old City
+8. **Cafe Delight** (Continental) - 4.2⭐ - Begumpet
 
 Each restaurant includes:
-- Real Google Maps coordinates
-- High-quality restaurant images from Unsplash
-- Detailed menu items with food photography
+- 6 menu items with realistic pricing (₹49 - ₹549)
+- Mix of veg and non-veg options
+- Bestseller items marked
+- Delivery time and fees
 - Accurate delivery information and ratings
 
 ## Technology Stack

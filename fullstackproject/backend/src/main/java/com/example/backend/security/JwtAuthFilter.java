@@ -37,9 +37,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         if (header != null && header.startsWith("Bearer ")) {
             String token = header.substring(7);
 
-            if (JwtUtil.validateToken(token)) {
-                String email = JwtUtil.getEmailFromToken(token);
-
+            try {
+                String email = JwtUtil.validateToken(token);
+                
                 UsernamePasswordAuthenticationToken auth =
                         new UsernamePasswordAuthenticationToken(
                                 email, null, Collections.emptyList()
@@ -50,6 +50,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 );
 
                 SecurityContextHolder.getContext().setAuthentication(auth);
+            } catch (RuntimeException e) {
+                // Token is invalid, continue without authentication
             }
         }
 
