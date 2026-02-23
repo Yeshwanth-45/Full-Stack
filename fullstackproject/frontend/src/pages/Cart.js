@@ -26,12 +26,16 @@ export default function Cart() {
         );
         setCart(updated);
         localStorage.setItem("cart", JSON.stringify(updated));
+        // Dispatch custom event to update navbar
+        window.dispatchEvent(new Event('cartUpdated'));
     };
 
     const removeItem = (id) => {
         const updated = cart.filter(item => item.id !== id);
         setCart(updated);
         localStorage.setItem("cart", JSON.stringify(updated));
+        // Dispatch custom event to update navbar
+        window.dispatchEvent(new Event('cartUpdated'));
     };
 
     const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -53,14 +57,18 @@ export default function Cart() {
 
         setLoading(true);
         try {
+            // Get restaurant ID from first item in cart
+            const restaurantId = cart[0]?.restaurantId || 1;
+            
             const orderData = {
+                restaurantId: restaurantId,
                 items: cart.map(item => ({
-                    itemId: item.id,
+                    menuItemId: item.id,
                     quantity: item.quantity
                 })),
                 deliveryAddress: deliveryAddress,
-                deliveryLatitude: 12.9716, // Default to Bangalore
-                deliveryLongitude: 77.5946
+                deliveryLatitude: 17.4326, // Default to Hyderabad
+                deliveryLongitude: 78.4071
             };
 
             const res = await fetch("http://localhost:8080/api/orders", {
@@ -77,13 +85,18 @@ export default function Cart() {
                 alert("Order placed successfully!");
                 localStorage.removeItem("cart");
                 setCart([]);
+                // Dispatch custom event to update navbar
+                window.dispatchEvent(new Event('cartUpdated'));
                 setTimeout(() => navigate(`/tracking/${orderResponse.id || 1}`), 1500);
             } else {
-                alert("Failed to place order");
+                const errorData = await res.json().catch(() => ({}));
+                const errorMsg = errorData.error || errorData.message || "Failed to place order";
+                console.error("Order error:", errorData);
+                alert(errorMsg);
             }
         } catch (err) {
-            console.error(err);
-            alert("Cannot connect to server");
+            console.error("Network error:", err);
+            alert("Cannot connect to server. Please check if backend is running.");
         } finally {
             setLoading(false);
         }

@@ -42,7 +42,7 @@ export default function Orders() {
         }
 
         try {
-            const response = await fetch(`http://localhost:8080/api/tracking/order/${orderId}/update-status`, {
+            const response = await fetch(`http://localhost:8080/api/orders/${orderId}/status`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -236,7 +236,7 @@ export default function Orders() {
             {/* Floating Chat Button */}
             <FloatingChatButton 
                 orderId={selectedOrder?.id} 
-                restaurantName="FoodieHub Support" 
+                restaurantName="BiteRush Support" 
             />
         </div>
     );

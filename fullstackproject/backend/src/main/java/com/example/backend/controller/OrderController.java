@@ -135,8 +135,22 @@ public class OrderController {
         dto.put("tax", order.getTax());
         dto.put("discount", order.getDiscount());
         dto.put("deliveryAddress", order.getDeliveryAddress());
+        dto.put("deliveryLatitude", order.getDeliveryLatitude());
+        dto.put("deliveryLongitude", order.getDeliveryLongitude());
+        dto.put("deliveryPartnerName", order.getDeliveryPartnerName());
+        dto.put("deliveryPartnerPhone", order.getDeliveryPartnerPhone());
+        dto.put("deliveryPartnerRating", order.getDeliveryPartnerRating());
         dto.put("estimatedDeliveryTime", order.getEstimatedDeliveryTime());
         dto.put("createdAt", order.getCreatedAt().toString());
+        
+        // Add restaurant location
+        Map<String, Object> restaurant = new java.util.HashMap<>();
+        restaurant.put("id", order.getRestaurant().getId());
+        restaurant.put("name", order.getRestaurant().getName());
+        restaurant.put("latitude", order.getRestaurant().getLatitude());
+        restaurant.put("longitude", order.getRestaurant().getLongitude());
+        dto.put("restaurant", restaurant);
+        
         dto.put("items", order.getItems().stream()
                 .map(item -> {
                     Map<String, Object> itemDto = new java.util.HashMap<>();

@@ -1,4 +1,4 @@
-# FoodieHub - Full Stack Food Delivery Application
+# BiteRush - Full Stack Food Delivery Application
 
 A modern, full-stack food delivery application built with **React** frontend and **Spring Boot** backend, featuring **Email/Password Authentication**, **MySQL Database**, **Advanced Features** like Wallet, Referrals, and Subscriptions.
 

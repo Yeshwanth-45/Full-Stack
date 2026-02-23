@@ -105,7 +105,7 @@ export default function Home() {
             <div style={styles.notLoggedIn}>
                 <div style={styles.welcomeCard}>
                     <div style={styles.logoSection}>
-                        <h1 style={styles.logoTitle}>🍔 FoodieHub</h1>
+                        <h1 style={styles.logoTitle}>🍔 BiteRush</h1>
                         <p style={styles.logoTagline}>Order food online from India's best restaurants</p>
                     </div>
                     
@@ -302,7 +302,7 @@ export default function Home() {
             )}
 
             {/* Floating Chat Button */}
-            {token && <FloatingChatButton restaurantName="FoodieHub Support" />}
+            {token && <FloatingChatButton restaurantName="BiteRush Support" />}
         </div>
     );
 }

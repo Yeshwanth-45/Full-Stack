@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import EnhancedUserProfile from "./EnhancedUserProfile";
 
@@ -7,7 +7,30 @@ export default function Navbar() {
     const token = localStorage.getItem("token");
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const [showProfile, setShowProfile] = useState(false);
+    const [cartCount, setCartCount] = useState(0);
     const location = useLocation();
+
+    // Update cart count whenever location changes
+    useEffect(() => {
+        const updateCartCount = () => {
+            const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+            const count = cart.reduce((sum, item) => sum + (item.quantity || 0), 0);
+            setCartCount(count);
+        };
+
+        updateCartCount();
+
+        // Listen for storage changes (when cart is updated in other tabs/windows)
+        window.addEventListener('storage', updateCartCount);
+        
+        // Listen for custom cart update event
+        window.addEventListener('cartUpdated', updateCartCount);
+
+        return () => {
+            window.removeEventListener('storage', updateCartCount);
+            window.removeEventListener('cartUpdated', updateCartCount);
+        };
+    }, [location]);
 
     const handleClearStorage = () => {
         localStorage.clear();
@@ -26,7 +49,7 @@ export default function Navbar() {
                     <Link to="/" style={styles.logo}>
                         <div style={styles.logoIcon}>🍔</div>
                         <div style={styles.logoContent}>
-                            <span style={styles.logoText}>FoodieHub</span>
+                            <span style={styles.logoText}>BiteRush</span>
                             <span style={styles.logoTagline}>Order • Eat • Repeat</span>
                         </div>
                     </Link>
@@ -74,7 +97,9 @@ export default function Navbar() {
                                 >
                                     <span style={styles.navIcon}>🛒</span>
                                     <span>Cart</span>
-                                    <span style={styles.cartBadge}>3</span>
+                                    {cartCount > 0 && (
+                                        <span style={styles.cartBadge}>{cartCount}</span>
+                                    )}
                                 </Link>
                                 
                                 {/* User Profile Button */}

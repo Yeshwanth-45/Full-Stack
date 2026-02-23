@@ -84,6 +84,8 @@ export default function Menu() {
             cart.push({ ...item, quantity: 1 });
         }
         localStorage.setItem("cart", JSON.stringify(cart));
+        // Dispatch custom event to update navbar
+        window.dispatchEvent(new Event('cartUpdated'));
         loadCart();
     };
 

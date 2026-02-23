@@ -222,7 +222,7 @@ export default function AuthPage() {
     return (
         <div style={styles.container}>
             <div style={styles.card}>
-                <h1 style={styles.title}>🍔 FoodieHub</h1>
+                <h1 style={styles.title}>🍔 BiteRush</h1>
                 <p style={styles.subtitle}>Welcome to the future of food delivery</p>
 
                 {/* User Type Selector */}

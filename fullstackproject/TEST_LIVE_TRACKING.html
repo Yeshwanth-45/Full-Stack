@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Live Order Tracking</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .section h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .button-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #059669;
+        }
+        
+        .btn-warning {
+            background: #f59e0b;
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            background: #d97706;
+        }
+        
+        .btn-info {
+            background: #06b6d4;
+            color: white;
+        }
+        
+        .btn-info:hover {
+            background: #0891b2;
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+        
+        .response {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f9ff;
+            border-radius: 8px;
+            border-left: 4px solid #06b6d4;
+            display: none;
+        }
+        
+        .response.show {
+            display: block;
+        }
+        
+        .response.error {
+            background: #fef2f2;
+            border-left-color: #ef4444;
+        }
+        
+        .response.success {
+            background: #f0fdf4;
+            border-left-color: #10b981;
+        }
+        
+        .response-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .response-content {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #555;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        
+        .info-box {
+            background: #fffbeb;
+            border: 2px solid #fbbf24;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .info-box strong {
+            color: #92400e;
+        }
+        
+        .status-flow {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 20px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+        }
+        
+        .status-item {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .status-icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .status-label {
+            font-size: 11px;
+            color: #666;
+        }
+        
+        .arrow {
+            color: #ccc;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗺️ Live Order Tracking Tester</h1>
+        <p class="subtitle">Test the live order tracking feature by updating order status</p>
+        
+        <div class="info-box">
+            <strong>⚠️ Important:</strong> Make sure you're logged in to the application and have placed at least one order. 
+            You can get your token from browser localStorage after logging in.
+        </div>
+        
+        <!-- Configuration Section -->
+        <div class="section">
+            <h2>1️⃣ Configuration</h2>
+            <div class="input-group">
+                <label for="token">Authorization Token:</label>
+                <input type="text" id="token" placeholder="Paste your JWT token here (from localStorage)">
+            </div>
+            <div class="input-group">
+                <label for="orderId">Order ID:</label>
+                <input type="number" id="orderId" placeholder="Enter order ID (e.g., 1)" value="1">
+            </div>
+            <button class="btn-info" onclick="loadToken()">📋 Load Token from Clipboard</button>
+        </div>
+        
+        <!-- Status Flow -->
+        <div class="section">
+            <h2>2️⃣ Order Status Flow</h2>
+            <div class="status-flow">
+                <div class="status-item">
+                    <div class="status-icon">⏳</div>
+                    <div class="status-label">PENDING</div>
+                </div>
+                <div class="arrow">→</div>
+                <div class="status-item">
+                    <div class="status-icon">✅</div>
+                    <div class="status-label">CONFIRMED</div>
+                </div>
+                <div class="arrow">→</div>
+                <div class="status-item">
+                    <div class="status-icon">👨‍🍳</div>
+                    <div class="status-label">PREPARING</div>
+                </div>
+                <div class="arrow">→</div>
+                <div class="status-item">
+                    <div class="status-icon">📦</div>
+                    <div class="status-label">READY</div>
+                </div>
+                <div class="arrow">→</div>
+                <div class="status-item">
+                    <div class="status-icon">🏍️</div>
+                    <div class="status-label">OUT_FOR_DELIVERY</div>
+                </div>
+                <div class="arrow">→</div>
+                <div class="status-item">
+                    <div class="status-icon">🎉</div>
+                    <div class="status-label">DELIVERED</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="section">
+            <h2>3️⃣ Quick Actions</h2>
+            <div class="button-group">
+                <button class="btn-primary" onclick="getOrder()">📋 Get Order</button>
+                <button class="btn-success" onclick="updateStatus('CONFIRMED')">✅ Confirm</button>
+                <button class="btn-warning" onclick="updateStatus('PREPARING')">👨‍🍳 Preparing</button>
+                <button class="btn-info" onclick="updateStatus('READY')">📦 Ready</button>
+                <button class="btn-primary" onclick="updateStatus('OUT_FOR_DELIVERY')">🏍️ Out for Delivery</button>
+                <button class="btn-success" onclick="updateStatus('DELIVERED')">🎉 Delivered</button>
+                <button class="btn-danger" onclick="updateStatus('CANCELLED')">❌ Cancel</button>
+            </div>
+        </div>
+        
+        <!-- Manual Status Update -->
+        <div class="section">
+            <h2>4️⃣ Manual Status Update</h2>
+            <div class="input-group">
+                <label for="status">Select Status:</label>
+                <select id="status">
+                    <option value="PENDING">⏳ PENDING</option>
+                    <option value="CONFIRMED">✅ CONFIRMED</option>
+                    <option value="PREPARING">👨‍🍳 PREPARING</option>
+                    <option value="READY">📦 READY</option>
+                    <option value="OUT_FOR_DELIVERY">🏍️ OUT_FOR_DELIVERY</option>
+                    <option value="NEARBY">📍 NEARBY</option>
+                    <option value="DELIVERED">🎉 DELIVERED</option>
+                    <option value="CANCELLED">❌ CANCELLED</option>
+                </select>
+            </div>
+            <button class="btn-primary" onclick="updateStatusManual()">🔄 Update Status</button>
+        </div>
+        
+        <!-- View Tracking -->
+        <div class="section">
+            <h2>5️⃣ View Tracking Page</h2>
+            <button class="btn-success" onclick="openTracking()">🗺️ Open Live Tracking Page</button>
+        </div>
+        
+        <!-- Response -->
+        <div id="response" class="response">
+            <div class="response-title">Response:</div>
+            <div class="response-content" id="responseContent"></div>
+        </div>
+    </div>
+    
+    <script>
+        const API_BASE = 'http://localhost:8080/api/orders';
+        
+        function getToken() {
+            return document.getElementById('token').value.trim();
+        }
+        
+        function getOrderId() {
+            return document.getElementById('orderId').value;
+        }
+        
+        function showResponse(data, isError = false) {
+            const responseDiv = document.getElementById('response');
+            const contentDiv = document.getElementById('responseContent');
+            
+            responseDiv.className = 'response show ' + (isError ? 'error' : 'success');
+            contentDiv.textContent = JSON.stringify(data, null, 2);
+        }
+        
+        async function loadToken() {
+            try {
+                const text = await navigator.clipboard.readText();
+                document.getElementById('token').value = text;
+                showResponse({ message: 'Token loaded from clipboard!' });
+            } catch (err) {
+                showResponse({ error: 'Failed to read clipboard. Please paste manually.' }, true);
+            }
+        }
+        
+        async function getOrder() {
+            const token = getToken();
+            const orderId = getOrderId();
+            
+            if (!token) {
+                showResponse({ error: 'Please enter authorization token' }, true);
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/${orderId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResponse(data);
+                } else {
+                    showResponse(data, true);
+                }
+            } catch (err) {
+                showResponse({ error: err.message }, true);
+            }
+        }
+        
+        async function updateStatus(status) {
+            const token = getToken();
+            const orderId = getOrderId();
+            
+            if (!token) {
+                showResponse({ error: 'Please enter authorization token' }, true);
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/${orderId}/status`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResponse({
+                        message: `Order status updated to ${status}`,
+                        order: data
+                    });
+                } else {
+                    showResponse(data, true);
+                }
+            } catch (err) {
+                showResponse({ error: err.message }, true);
+            }
+        }
+        
+        function updateStatusManual() {
+            const status = document.getElementById('status').value;
+            updateStatus(status);
+        }
+        
+        function openTracking() {
+            const orderId = getOrderId();
+            window.open(`http://localhost:3000/tracking/${orderId}`, '_blank');
+        }
+        
+        // Try to load token from localStorage on page load
+        window.addEventListener('load', () => {
+            try {
+                // This will only work if opened from the same origin
+                const token = localStorage.getItem('token');
+                if (token) {
+                    document.getElementById('token').value = token;
+                    showResponse({ message: 'Token loaded from localStorage!' });
+                }
+            } catch (err) {
+                console.log('Could not access localStorage (different origin)');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,12 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import OrderTracking from '../components/OrderTracking';
+import LiveOrderTracking from '../components/LiveOrderTracking';
 import FloatingChatButton from '../components/FloatingChatButton';
 
 const OrderTrackingPage = () => {
     const { orderId } = useParams();
     const navigate = useNavigate();
-    const [showTracking, setShowTracking] = useState(true);
     const token = localStorage.getItem('token');
 
     useEffect(() => {
@@ -16,22 +15,13 @@ const OrderTrackingPage = () => {
         }
     }, [token, navigate]);
 
-    const handleClose = () => {
-        navigate('/orders');
-    };
-
     if (!token) {
         return null;
     }
 
     return (
         <div style={styles.pageContainer}>
-            {showTracking && (
-                <OrderTracking 
-                    orderId={orderId} 
-                    onClose={handleClose}
-                />
-            )}
+            <LiveOrderTracking orderId={orderId} />
             
             {/* Floating Chat Button */}
             <FloatingChatButton 
@@ -45,7 +35,8 @@ const OrderTrackingPage = () => {
 const styles = {
     pageContainer: {
         minHeight: '100vh',
-        background: '#f8fafc'
+        background: '#f8fafc',
+        paddingTop: '80px'
     }
 };
 
