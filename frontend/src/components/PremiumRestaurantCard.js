@@ -16,6 +16,7 @@ export default function PremiumRestaurantCard({ restaurant, isDarkMode = false }
     const badges = [];
     if (restaurant.rating >= 4.7) badges.push({ text: '⭐ Top Rated', color: '#ffd93d' });
     if (restaurant.deliveryTime < 25) badges.push({ text: '⚡ Fast', color: '#48dbfb' });
+    if (restaurant.distance && restaurant.distance < 2) badges.push({ text: '📍 Nearby', color: '#667eea' });
     if (tasteMatch >= 80) badges.push({ text: '🎯 Perfect Match', color: '#00b894' });
     if (nudges.some(n => n.type === 'frequent')) badges.push({ text: '💚 Favorite', color: '#ff6b6b' });
 
@@ -121,7 +122,12 @@ export default function PremiumRestaurantCard({ restaurant, isDarkMode = false }
                 {/* Footer */}
                 <div style={styles.footer}>
                     <div style={styles.deliveryInfo}>
-                        <span style={styles.deliveryFee}>₹{restaurant.deliveryFee || 40}</span>
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                            <span style={styles.deliveryFee}>₹{restaurant.deliveryFee || 40}</span>
+                            {restaurant.distance && (
+                                <span style={styles.distanceText}>• {restaurant.distance.toFixed(1)} km</span>
+                            )}
+                        </div>
                         <span style={styles.deliveryLabel}>delivery</span>
                     </div>
                     <button 
@@ -318,6 +324,11 @@ const styles = {
     deliveryLabel: {
         fontSize: '12px',
         color: '#64748b'
+    },
+    distanceText: {
+        fontSize: '14px',
+        color: '#64748b',
+        fontWeight: '600'
     },
     orderBtn: {
         padding: '12px 24px',

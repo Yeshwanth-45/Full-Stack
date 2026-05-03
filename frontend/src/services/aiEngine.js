@@ -41,7 +41,20 @@ class AIEngine {
         localStorage.setItem('orderHistory', JSON.stringify(this.orderHistory));
     }
 
-    // Calculate Taste Match Score (0-100%)
+    // Calculate distance between two coordinates in km
+    calculateDistance(lat1, lon1, lat2, lon2) {
+        if (!lat1 || !lon1 || !lat2 || !lon2) return 999;
+        const R = 6371; // Earth's radius
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = 
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    }
+
     calculateTasteMatch(restaurant, dish = null) {
         let score = 50; // Base score
 

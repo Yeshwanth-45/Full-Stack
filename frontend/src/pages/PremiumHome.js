@@ -6,6 +6,7 @@ import PremiumRestaurantCard from "../components/PremiumRestaurantCard";
 import SmartSearchBar from "../components/SmartSearchBar";
 import MoodSelector from "../components/MoodSelector";
 import CraveSwipe from "../components/CraveSwipe";
+import LiveLocationDetector from "../components/LiveLocationDetector";
 
 export default function PremiumHome() {
     const navigate = useNavigate();
@@ -16,17 +17,23 @@ export default function PremiumHome() {
     const [selectedMood, setSelectedMood] = useState(null);
     const [showTasteProfile, setShowTasteProfile] = useState(false);
     const [showCraveSwipe, setShowCraveSwipe] = useState(false);
+    const [userLocation, setUserLocation] = useState(null);
     const [sortBy, setSortBy] = useState("tasteMatch");
     const [isDarkMode, setIsDarkMode] = useState(false);
+    const [showLocationDetector, setShowLocationDetector] = useState(false);
     const token = localStorage.getItem("token");
 
-    // Check if user has completed taste profile
+    // Load saved location on mount
     useEffect(() => {
-        const profile = aiEngine.loadUserProfile();
-        if (profile.preferredCuisines.length === 0 && token) {
-            setShowTasteProfile(true);
-        }
-    }, [token]);
+        const savedLoc = localStorage.getItem('userLocation');
+        if (savedLoc) setUserLocation(JSON.parse(savedLoc));
+    }, []);
+
+    const handleLocationDetected = (loc) => {
+        setUserLocation(loc);
+        localStorage.setItem('userLocation', JSON.stringify(loc));
+        setShowLocationDetector(false);
+    };
 
     const loadRestaurants = useCallback(async () => {
         setLoading(true);
@@ -44,12 +51,16 @@ export default function PremiumHome() {
                 let data = await response.json();
                 data = Array.isArray(data) ? data : [];
                 
-                // Enhance with AI scores
+                // Enhance with AI scores and distance
                 data = data.map(r => ({
                     ...r,
                     tasteMatch: aiEngine.calculateTasteMatch(r),
                     deliveryAccuracy: aiEngine.calculateDeliveryAccuracy(r),
-                    nudges: aiEngine.getPersonalizedNudges(r)
+                    nudges: aiEngine.getPersonalizedNudges(r),
+                    distance: userLocation ? aiEngine.calculateDistance(
+                        userLocation.latitude, userLocation.longitude,
+                        r.latitude, r.longitude
+                    ) : null
                 }));
 
                 setRestaurants(data);
@@ -62,13 +73,13 @@ export default function PremiumHome() {
         } finally {
             setLoading(false);
         }
-    }, [token]);
+    }, [token, userLocation]);
 
     useEffect(() => {
         if (token) {
             loadRestaurants();
         }
-    }, [token, loadRestaurants]);
+    }, [token, loadRestaurants, userLocation]);
 
     // Get time-based greeting
     const getGreeting = () => {
@@ -106,6 +117,8 @@ export default function PremiumHome() {
                 return filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0));
             case "deliveryTime":
                 return filtered.sort((a, b) => (a.deliveryTime || 30) - (b.deliveryTime || 30));
+            case "distance":
+                return filtered.sort((a, b) => (a.distance || 999) - (b.distance || 999));
             case "deliveryAccuracy":
                 return filtered.sort((a, b) => b.deliveryAccuracy - a.deliveryAccuracy);
             default:
@@ -201,6 +214,32 @@ export default function PremiumHome() {
                             What are you in the mood for?
                         </p>
 
+                        {/* Location Bar */}
+                        <div style={styles.locationBar} onClick={() => setShowLocationDetector(true)}>
+                            <span style={styles.locationIcon}>📍</span>
+                            <span style={styles.locationText}>
+                                {userLocation ? (userLocation.address || 'Location detected') : 'Detect your location for nearby restaurants'}
+                            </span>
+                            <span style={styles.locationArrow}>⌄</span>
+                        </div>
+
+                        {showLocationDetector && (
+                            <div style={styles.locationModalOverlay} onClick={() => setShowLocationDetector(false)}>
+                                <div style={styles.locationModal} onClick={e => e.stopPropagation()}>
+                                    <LiveLocationDetector 
+                                        onLocationDetected={handleLocationDetected}
+                                        onLocationError={(err) => console.error(err)}
+                                    />
+                                    <button 
+                                        style={styles.closeLocationBtn}
+                                        onClick={() => setShowLocationDetector(false)}
+                                    >
+                                        Close
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
                         {/* Smart Search Bar */}
                         <SmartSearchBar 
                             value={searchTerm}
@@ -266,6 +305,7 @@ export default function PremiumHome() {
                         {[
                             { value: 'tasteMatch', label: '🎯 Best Match', icon: '🎯' },
                             { value: 'rating', label: '⭐ Top Rated', icon: '⭐' },
+                            { value: 'distance', label: '📍 Nearby', icon: '📍' },
                             { value: 'deliveryTime', label: '⚡ Fastest', icon: '⚡' },
                             { value: 'deliveryAccuracy', label: '📊 Most Accurate', icon: '📊' }
                         ].map(option => (
@@ -693,5 +733,66 @@ const styles = {
         minHeight: '100vh',
         background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
         padding: '40px 20px'
+    },
+    locationBar: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+        background: 'rgba(255, 255, 255, 0.2)',
+        padding: '12px 24px',
+        borderRadius: '50px',
+        marginBottom: '25px',
+        cursor: 'pointer',
+        border: '1px solid rgba(255, 255, 255, 0.3)',
+        transition: 'all 0.3s ease',
+        maxWidth: '500px',
+        margin: '0 auto 25px'
+    },
+    locationIcon: {
+        fontSize: '1.2rem'
+    },
+    locationText: {
+        color: 'white',
+        fontSize: '0.95rem',
+        fontWeight: '600',
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        flex: 1
+    },
+    locationArrow: {
+        color: 'white',
+        fontSize: '0.8rem'
+    },
+    locationModalOverlay: {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'rgba(0,0,0,0.7)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1000,
+        backdropFilter: 'blur(5px)'
+    },
+    locationModal: {
+        background: 'transparent',
+        width: '90%',
+        maxWidth: '600px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '20px'
+    },
+    closeLocationBtn: {
+        padding: '12px 24px',
+        background: 'white',
+        color: '#1e293b',
+        border: 'none',
+        borderRadius: '12px',
+        fontWeight: '700',
+        cursor: 'pointer',
+        alignSelf: 'center'
     }
 };
