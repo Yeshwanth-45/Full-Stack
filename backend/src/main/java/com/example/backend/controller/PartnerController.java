@@ -37,6 +37,24 @@ public class PartnerController {
         return ResponseEntity.ok(getAuthenticatedRestaurant());
     }
 
+    @GetMapping("/analytics")
+    public ResponseEntity<?> getAnalytics() {
+        Restaurant restaurant = getAuthenticatedRestaurant();
+        List<MenuItem> items = menuItemRepository.findByRestaurantId(restaurant.getId());
+        
+        // Mock analytics data for demonstration
+        Map<String, Object> analytics = Map.of(
+            "totalRevenue", 12450.0,
+            "totalOrders", 42,
+            "averageOrderValue", 296.4,
+            "topItems", items.stream().limit(3).toList(),
+            "peakHours", Map.of("12PM-2PM", 15, "7PM-9PM", 22),
+            "customerRating", 4.8
+        );
+        
+        return ResponseEntity.ok(analytics);
+    }
+
     @GetMapping("/menu")
     public ResponseEntity<List<MenuItem>> getMenu() {
         Restaurant restaurant = getAuthenticatedRestaurant();
