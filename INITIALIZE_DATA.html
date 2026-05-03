@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FoodieHub - Initialize Sample Data</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        
+        .info-box {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        
+        .info-box h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        
+        .info-box ul {
+            margin-left: 20px;
+            color: #555;
+        }
+        
+        .info-box li {
+            margin: 5px 0;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: 600;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            display: none;
+        }
+        
+        .result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .result.info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .status {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🍕 FoodieHub Setup</h1>
+        <p class="subtitle">Initialize your database with sample data</p>
+        
+        <div class="info-box">
+            <h3>📦 What will be added:</h3>
+            <ul>
+                <li><strong>8 Restaurants</strong> - Pizza Palace, Spice Garden, Burger Barn, Sushi Station, Taco Fiesta, Noodle House, Biryani Blues, Cafe Delight</li>
+                <li><strong>48 Menu Items</strong> - 6 items per restaurant with realistic pricing</li>
+                <li><strong>7 Promo Codes</strong> - FIRST50, SAVE20, WELCOME, FREESHIP, MEGA100, WEEKEND25, LUNCH15</li>
+            </ul>
+        </div>
+        
+        <div class="info-box">
+            <h3>⚠️ Prerequisites:</h3>
+            <ul>
+                <li>Backend must be running on <strong>http://localhost:8080</strong></li>
+                <li>MySQL database <strong>foodiehub</strong> must exist</li>
+                <li>This will skip if data already exists</li>
+            </ul>
+        </div>
+        
+        <button id="initBtn" onclick="initializeData()">
+            🚀 Initialize Sample Data
+        </button>
+        
+        <div class="loader" id="loader"></div>
+        <div class="result" id="result"></div>
+        <div class="status" id="status">Ready to initialize</div>
+    </div>
+    
+    <script>
+        async function initializeData() {
+            const btn = document.getElementById('initBtn');
+            const loader = document.getElementById('loader');
+            const result = document.getElementById('result');
+            const status = document.getElementById('status');
+            
+            // Disable button and show loader
+            btn.disabled = true;
+            loader.style.display = 'block';
+            result.style.display = 'none';
+            status.textContent = 'Initializing data...';
+            
+            try {
+                const response = await fetch('http://localhost:8080/api/init-data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.text();
+                
+                loader.style.display = 'none';
+                result.style.display = 'block';
+                
+                if (response.ok) {
+                    if (data.includes('already exists')) {
+                        result.className = 'result info';
+                        result.innerHTML = `
+                            <strong>ℹ️ Info:</strong><br>
+                            ${data}<br><br>
+                            Your database already has sample data. No changes were made.
+                        `;
+                        status.textContent = 'Data already exists';
+                    } else {
+                        result.className = 'result success';
+                        result.innerHTML = `
+                            <strong>✅ Success!</strong><br>
+                            ${data}<br><br>
+                            You can now:<br>
+                            • Visit <a href="http://localhost:3000" target="_blank">http://localhost:3000</a> to see restaurants<br>
+                            • Browse menu items<br>
+                            • Place orders<br>
+                            • Test promo codes
+                        `;
+                        status.textContent = 'Initialization complete!';
+                    }
+                } else {
+                    throw new Error(data);
+                }
+            } catch (error) {
+                loader.style.display = 'none';
+                result.style.display = 'block';
+                result.className = 'result error';
+                result.innerHTML = `
+                    <strong>❌ Error:</strong><br>
+                    ${error.message}<br><br>
+                    <strong>Troubleshooting:</strong><br>
+                    • Make sure backend is running on port 8080<br>
+                    • Check if MySQL is running<br>
+                    • Verify database 'foodiehub' exists<br>
+                    • Check backend console for errors
+                `;
+                status.textContent = 'Initialization failed';
+            } finally {
+                btn.disabled = false;
+            }
+        }
+        
+        // Check backend status on load
+        window.addEventListener('load', async () => {
+            const status = document.getElementById('status');
+            try {
+                const response = await fetch('http://localhost:8080/api/test');
+                if (response.ok) {
+                    status.textContent = '✅ Backend is running - Ready to initialize';
+                    status.style.color = '#28a745';
+                }
+            } catch (error) {
+                status.textContent = '❌ Backend is not running on port 8080';
+                status.style.color = '#dc3545';
+                document.getElementById('initBtn').disabled = true;
+            }
+        });
+    </script>
+</body>
+</html>

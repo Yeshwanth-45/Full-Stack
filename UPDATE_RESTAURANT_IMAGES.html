@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Restaurant Images - BiteRush</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 32px;
+            text-align: center;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+            text-align: center;
+        }
+        
+        .info-box {
+            background: #f0f9ff;
+            border-left: 4px solid #3b82f6;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 8px;
+        }
+        
+        .info-box h3 {
+            color: #1e40af;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        
+        .info-box ul {
+            margin-left: 20px;
+            color: #374151;
+        }
+        
+        .info-box li {
+            margin: 8px 0;
+        }
+        
+        .restaurant-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 30px 0;
+        }
+        
+        .restaurant-item {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            border: 2px solid #e5e7eb;
+        }
+        
+        .restaurant-item .emoji {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+        
+        .restaurant-item .name {
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 5px;
+        }
+        
+        .restaurant-item .cuisine {
+            font-size: 12px;
+            color: #6b7280;
+        }
+        
+        .update-button {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .update-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+        
+        .update-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .response {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 12px;
+            display: none;
+        }
+        
+        .response.show {
+            display: block;
+        }
+        
+        .response.success {
+            background: #f0fdf4;
+            border-left: 4px solid #10b981;
+            color: #065f46;
+        }
+        
+        .response.error {
+            background: #fef2f2;
+            border-left: 4px solid #ef4444;
+            color: #991b1b;
+        }
+        
+        .response-title {
+            font-weight: 700;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        
+        .response-message {
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .warning-box {
+            background: #fffbeb;
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+        
+        .warning-box strong {
+            color: #92400e;
+        }
+        
+        .image-preview {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f9fafb;
+            border-radius: 12px;
+        }
+        
+        .image-preview h3 {
+            color: #111827;
+            margin-bottom: 15px;
+        }
+        
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+        
+        .image-card {
+            text-align: center;
+        }
+        
+        .image-card img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 5px;
+        }
+        
+        .image-card .label {
+            font-size: 11px;
+            color: #6b7280;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🖼️ Update Restaurant Images</h1>
+        <p class="subtitle">Update all restaurant profile images with unique food photos</p>
+        
+        <div class="info-box">
+            <h3>📋 What This Does:</h3>
+            <ul>
+                <li>Updates all restaurant profile images</li>
+                <li>Each restaurant gets a unique, high-quality food image</li>
+                <li>Images are from Unsplash (free to use)</li>
+                <li>Takes effect immediately</li>
+            </ul>
+        </div>
+        
+        <div class="warning-box">
+            <strong>⚠️ Important:</strong> Make sure the backend server is running on http://localhost:8080
+        </div>
+        
+        <h3 style="margin-bottom: 15px; color: #111827;">Restaurants to Update:</h3>
+        <div class="restaurant-grid">
+            <div class="restaurant-item">
+                <div class="emoji">🍕</div>
+                <div class="name">Pizza Palace</div>
+                <div class="cuisine">Italian</div>
+            </div>
+            <div class="restaurant-item">
+                <div class="emoji">🍛</div>
+                <div class="name">Spice Garden</div>
+                <div class="cuisine">Indian</div>
+            </div>
+            <div class="restaurant-item">
+                <div class="emoji">🍔</div>
+                <div class="name">Burger Barn</div>
+                <div class="cuisine">American</div>
+            </div>
+            <div class="restaurant-item">
+                <div class="emoji">🍣</div>
+                <div class="name">Sushi Station</div>
+                <div class="cuisine">Japanese</div>
+            </div>
+            <div class="restaurant-item">
+                <div class="emoji">🌮</div>
+                <div class="name">Taco Fiesta</div>
+                <div class="cuisine">Mexican</div>
+            </div>
+            <div class="restaurant-item">
+                <div class="emoji">🍜</div>
+                <div class="name">Noodle House</div>
+                <div class="cuisine">Chinese</div>
+            </div>
+            <div class="restaurant-item">
+                <div class="emoji">🍚</div>
+                <div class="name">Biryani Blues</div>
+                <div class="cuisine">Indian</div>
+            </div>
+            <div class="restaurant-item">
+                <div class="emoji">☕</div>
+                <div class="name">Cafe Delight</div>
+                <div class="cuisine">Continental</div>
+            </div>
+        </div>
+        
+        <button class="update-button" onclick="updateImages()">
+            🔄 Update All Restaurant Images
+        </button>
+        
+        <div id="response" class="response">
+            <div class="response-title" id="responseTitle"></div>
+            <div class="response-message" id="responseMessage"></div>
+        </div>
+        
+        <div class="image-preview">
+            <h3>🎨 New Images Preview:</h3>
+            <div class="image-grid">
+                <div class="image-card">
+                    <img src="https://images.unsplash.com/photo-1513104890138-7c749659a591?w=200&h=150&fit=crop" alt="Pizza">
+                    <div class="label">Pizza Palace</div>
+                </div>
+                <div class="image-card">
+                    <img src="https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=200&h=150&fit=crop" alt="Indian">
+                    <div class="label">Spice Garden</div>
+                </div>
+                <div class="image-card">
+                    <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=200&h=150&fit=crop" alt="Burger">
+                    <div class="label">Burger Barn</div>
+                </div>
+                <div class="image-card">
+                    <img src="https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=200&h=150&fit=crop" alt="Sushi">
+                    <div class="label">Sushi Station</div>
+                </div>
+                <div class="image-card">
+                    <img src="https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=200&h=150&fit=crop" alt="Tacos">
+                    <div class="label">Taco Fiesta</div>
+                </div>
+                <div class="image-card">
+                    <img src="https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=200&h=150&fit=crop" alt="Noodles">
+                    <div class="label">Noodle House</div>
+                </div>
+                <div class="image-card">
+                    <img src="https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=200&h=150&fit=crop" alt="Biryani">
+                    <div class="label">Biryani Blues</div>
+                </div>
+                <div class="image-card">
+                    <img src="https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=200&h=150&fit=crop" alt="Cafe">
+                    <div class="label">Cafe Delight</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        async function updateImages() {
+            const button = document.querySelector('.update-button');
+            const responseDiv = document.getElementById('response');
+            const responseTitle = document.getElementById('responseTitle');
+            const responseMessage = document.getElementById('responseMessage');
+            
+            // Disable button
+            button.disabled = true;
+            button.textContent = '⏳ Updating images...';
+            
+            // Hide previous response
+            responseDiv.classList.remove('show', 'success', 'error');
+            
+            try {
+                const response = await fetch('http://localhost:8080/api/update-images', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const message = await response.text();
+                
+                if (response.ok) {
+                    responseDiv.classList.add('show', 'success');
+                    responseTitle.textContent = '✅ Success!';
+                    responseMessage.textContent = message;
+                    
+                    // Show success for 3 seconds, then suggest refresh
+                    setTimeout(() => {
+                        responseMessage.textContent = message + '\n\n🔄 Refresh your browser to see the new images!';
+                    }, 1000);
+                } else {
+                    throw new Error(message);
+                }
+            } catch (error) {
+                responseDiv.classList.add('show', 'error');
+                responseTitle.textContent = '❌ Error';
+                responseMessage.textContent = `Failed to update images: ${error.message}\n\nMake sure the backend server is running on http://localhost:8080`;
+            } finally {
+                button.disabled = false;
+                button.textContent = '🔄 Update All Restaurant Images';
+            }
+        }
+    </script>
+</body>
+</html>

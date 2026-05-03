@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Menu Items - BiteRush</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 32px;
+            text-align: center;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+            text-align: center;
+        }
+        
+        .info-box {
+            background: #f0f9ff;
+            border-left: 4px solid #3b82f6;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 8px;
+        }
+        
+        .info-box h3 {
+            color: #1e40af;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        
+        .info-box ul {
+            margin-left: 20px;
+            color: #374151;
+        }
+        
+        .info-box li {
+            margin: 8px 0;
+        }
+        
+        .warning-box {
+            background: #fffbeb;
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+        
+        .warning-box strong {
+            color: #92400e;
+        }
+        
+        .update-button {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            margin-bottom: 20px;
+        }
+        
+        .update-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+        
+        .update-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .response {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 12px;
+            display: none;
+        }
+        
+        .response.show {
+            display: block;
+        }
+        
+        .response.success {
+            background: #f0fdf4;
+            border-left: 4px solid #10b981;
+            color: #065f46;
+        }
+        
+        .response.error {
+            background: #fef2f2;
+            border-left: 4px solid #ef4444;
+            color: #991b1b;
+        }
+        
+        .response-title {
+            font-weight: 700;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        
+        .response-message {
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .menu-preview {
+            margin-top: 30px;
+        }
+        
+        .menu-preview h3 {
+            color: #111827;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+        
+        .restaurant-menu {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f9fafb;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .restaurant-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .menu-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+        
+        .menu-item {
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .item-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 4px;
+        }
+        
+        .item-price {
+            font-size: 12px;
+            color: #667eea;
+            font-weight: 700;
+        }
+        
+        .item-category {
+            font-size: 11px;
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🍽️ Add Menu Items</h1>
+        <p class="subtitle">Add 6 menu items to each restaurant (48 total items)</p>
+        
+        <div class="info-box">
+            <h3>📋 What This Does:</h3>
+            <ul>
+                <li>Adds 6 unique menu items to each of the 8 restaurants</li>
+                <li>Total of 48 menu items will be created</li>
+                <li>Skips restaurants that already have menu items</li>
+                <li>Each item includes name, price, category, description, and nutritional info</li>
+            </ul>
+        </div>
+        
+        <div class="warning-box">
+            <strong>⚠️ Important:</strong> Make sure the backend server is running on http://localhost:8080
+        </div>
+        
+        <button class="update-button" onclick="addMenuItems()">
+            ➕ Add Menu Items to All Restaurants
+        </button>
+        
+        <div id="response" class="response">
+            <div class="response-title" id="responseTitle"></div>
+            <div class="response-message" id="responseMessage"></div>
+        </div>
+        
+        <div class="menu-preview">
+            <h3>📖 Menu Items Preview:</h3>
+            
+            <div class="restaurant-menu">
+                <div class="restaurant-name">🍕 Pizza Palace</div>
+                <div class="menu-items">
+                    <div class="menu-item">
+                        <div class="item-name">Margherita Pizza</div>
+                        <div class="item-price">₹299</div>
+                        <div class="item-category">Pizza</div>
+                    </div>
+                    <div class="menu-item">
+                        <div class="item-name">Pepperoni Pizza</div>
+                        <div class="item-price">₹399</div>
+                        <div class="item-category">Pizza</div>
+                    </div>
+                    <div class="menu-item">
+                        <div class="item-name">Veggie Supreme</div>
+                        <div class="item-price">₹349</div>
+                        <div class="item-category">Pizza</div>
+                    </div>
+                    <div class="menu-item">
+                        <div class="item-name">BBQ Chicken Pizza</div>
+                        <div class="item-price">₹429</div>
+                        <div class="item-category">Pizza</div>
+                    </div>
+                    <div class="menu-item">
+                        <div class="item-name">Garlic Bread</div>
+                        <div class="item-price">₹129</div>
+                        <div class="item-category">Sides</div>
+                    </div>
+                    <div class="menu-item">
+                        <div class="item-name">Cheese Burst Pizza</div>
+                        <div class="item-price">₹449</div>
+                        <div class="item-category">Pizza</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="restaurant-menu">
+                <div class="restaurant-name">🍛 Spice Garden</div>
+                <div class="menu-items">
+                    <div class="menu-item">
+                        <div class="item-name">Butter Chicken</div>
+                        <div class="item-price">₹349</div>
+                        <div class="item-category">Main Course</div>
+                    </div>
+                    <div class="menu-item">
+                        <div class="item-name">Paneer Tikka</div>
+                        <div class="item-price">₹299</div>
+                        <div class="item-category">Starters</div>
+                    </div>
+                    <div class="menu-item">
+                        <div class="item-name">Dal Makhani</div>
+                        <div class="item-price">₹249</div>
+                        <div class="item-category">Main Course</div>
+                    </div>
+                    <div class="menu-item">
+                        <div class="item-name">Chicken Biryani</div>
+                        <div class="item-price">₹329</div>
+                        <div class="item-category">Rice</div>
+                    </div>
+                    <div class="menu-item">
+                        <div class="item-name">Naan Bread</div>
+                        <div class="item-price">₹49</div>
+                        <div class="item-category">Breads</div>
+                    </div>
+                    <div class="menu-item">
+                        <div class="item-name">Gulab Jamun</div>
+                        <div class="item-price">₹99</div>
+                        <div class="item-category">Desserts</div>
+                    </div>
+                </div>
+            </div>
+            
+            <p style="text-align: center; color: #6b7280; margin-top: 20px;">
+                + 6 more restaurants with 6 items each...
+            </p>
+        </div>
+    </div>
+    
+    <script>
+        async function addMenuItems() {
+            const button = document.querySelector('.update-button');
+            const responseDiv = document.getElementById('response');
+            const responseTitle = document.getElementById('responseTitle');
+            const responseMessage = document.getElementById('responseMessage');
+            
+            // Disable button
+            button.disabled = true;
+            button.textContent = '⏳ Adding menu items...';
+            
+            // Hide previous response
+            responseDiv.classList.remove('show', 'success', 'error');
+            
+            try {
+                const response = await fetch('http://localhost:8080/api/add-menu-items', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const message = await response.text();
+                
+                if (response.ok) {
+                    responseDiv.classList.add('show', 'success');
+                    responseTitle.textContent = '✅ Success!';
+                    responseMessage.textContent = message + '\n\n🔄 Refresh your browser to see the menu items in restaurants!';
+                } else {
+                    throw new Error(message);
+                }
+            } catch (error) {
+                responseDiv.classList.add('show', 'error');
+                responseTitle.textContent = '❌ Error';
+                responseMessage.textContent = `Failed to add menu items: ${error.message}\n\nMake sure the backend server is running on http://localhost:8080`;
+            } finally {
+                button.disabled = false;
+                button.textContent = '➕ Add Menu Items to All Restaurants';
+            }
+        }
+    </script>
+</body>
+</html>

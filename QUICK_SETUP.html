@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BiteRush - Quick Setup</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin: 30px 0;
+        }
+        button {
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+        }
+        .btn-menu {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .btn-images {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        .btn-all {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        #result {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            display: none;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .loading {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .info-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+        .info-box h3 {
+            margin-top: 0;
+            color: #667eea;
+        }
+        .info-box ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .info-box li {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🍔 BiteRush Quick Setup</h1>
+        <p class="subtitle">Add menu items and update restaurant images</p>
+        
+        <div class="info-box">
+            <h3>What does this do?</h3>
+            <ul>
+                <li><strong>Add Menu Items:</strong> Adds 6 cuisine-specific items to each restaurant</li>
+                <li><strong>Update Images:</strong> Sets unique Unsplash images for each restaurant</li>
+                <li><strong>Do Both:</strong> Runs both operations in sequence</li>
+            </ul>
+        </div>
+
+        <div class="button-group">
+            <button class="btn-menu" onclick="addMenuItems()">
+                📋 Add Menu Items to All Restaurants
+            </button>
+            
+            <button class="btn-images" onclick="updateImages()">
+                🖼️ Update Restaurant Images
+            </button>
+            
+            <button class="btn-all" onclick="doEverything()">
+                ⚡ Do Everything (Menu + Images)
+            </button>
+        </div>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080';
+
+        function showResult(message, type) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = message;
+            resultDiv.className = type;
+            resultDiv.style.display = 'block';
+        }
+
+        function disableButtons(disabled) {
+            document.querySelectorAll('button').forEach(btn => {
+                btn.disabled = disabled;
+            });
+        }
+
+        async function addMenuItems() {
+            disableButtons(true);
+            showResult('Adding menu items to restaurants...', 'loading');
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/add-menu-items`, {
+                    method: 'POST'
+                });
+                const data = await response.text();
+                showResult(`✅ ${data}`, 'success');
+            } catch (error) {
+                showResult(`❌ Error: ${error.message}. Make sure backend is running on port 8080.`, 'error');
+            } finally {
+                disableButtons(false);
+            }
+        }
+
+        async function updateImages() {
+            disableButtons(true);
+            showResult('Updating restaurant images...', 'loading');
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/update-images`, {
+                    method: 'POST'
+                });
+                const data = await response.text();
+                showResult(`✅ ${data}`, 'success');
+            } catch (error) {
+                showResult(`❌ Error: ${error.message}. Make sure backend is running on port 8080.`, 'error');
+            } finally {
+                disableButtons(false);
+            }
+        }
+
+        async function doEverything() {
+            disableButtons(true);
+            showResult('Step 1/2: Adding menu items...', 'loading');
+            
+            try {
+                // Step 1: Add menu items
+                const menuResponse = await fetch(`${API_BASE}/api/add-menu-items`, {
+                    method: 'POST'
+                });
+                const menuData = await menuResponse.text();
+                
+                showResult('Step 2/2: Updating images...', 'loading');
+                
+                // Step 2: Update images
+                const imageResponse = await fetch(`${API_BASE}/api/update-images`, {
+                    method: 'POST'
+                });
+                const imageData = await imageResponse.text();
+                
+                showResult(`✅ All done!\n\n${menuData}\n${imageData}`, 'success');
+            } catch (error) {
+                showResult(`❌ Error: ${error.message}. Make sure backend is running on port 8080.`, 'error');
+            } finally {
+                disableButtons(false);
+            }
+        }
+    </script>
+</body>
+</html>
