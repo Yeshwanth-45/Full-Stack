@@ -41,6 +41,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/add-menu-items").permitAll()   // <-- add menu items
                         .requestMatchers("/api/remove-beef-items").permitAll()   // <-- remove beef items
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers("/api/partner/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

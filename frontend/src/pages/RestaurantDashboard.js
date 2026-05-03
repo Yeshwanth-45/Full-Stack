@@ -7,6 +7,18 @@ export default function RestaurantDashboard() {
     const [restaurant, setRestaurant] = useState(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('orders');
+    const [menuItems, setMenuItems] = useState([]);
+    const [menuLoading, setMenuLoading] = useState(false);
+    const [showAddModal, setShowAddModal] = useState(false);
+    const [newItem, setNewItem] = useState({
+        name: '',
+        price: '',
+        category: '',
+        description: '',
+        isVeg: true,
+        isSpicy: false,
+        imageUrl: ''
+    });
     const [stats, setStats] = useState({
         todayOrders: 0,
         todayRevenue: 0,
@@ -23,10 +35,81 @@ export default function RestaurantDashboard() {
         }
         fetchRestaurantData();
         fetchOrders();
+        fetchMenu(); // Initial fetch
         // Poll for new orders every 30 seconds
         const interval = setInterval(fetchOrders, 30000);
         return () => clearInterval(interval);
     }, [token, navigate]);
+
+    const fetchMenu = async () => {
+        setMenuLoading(true);
+        try {
+            const res = await fetch('http://localhost:8080/api/partner/menu', {
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setMenuItems(data);
+            }
+        } catch (error) {
+            console.error('Error fetching menu:', error);
+        } finally {
+            setMenuLoading(false);
+        }
+    };
+
+    const handleAddMenuItem = async (e) => {
+        e.preventDefault();
+        try {
+            const res = await fetch('http://localhost:8080/api/partner/menu', {
+                method: 'POST',
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(newItem)
+            });
+            if (res.ok) {
+                setShowAddModal(false);
+                setNewItem({
+                    name: '', price: '', category: '', description: '',
+                    isVeg: true, isSpicy: false, imageUrl: ''
+                });
+                fetchMenu();
+            }
+        } catch (error) {
+            console.error('Error adding menu item:', error);
+        }
+    };
+
+    const handleToggleAvailability = async (itemId) => {
+        try {
+            const res = await fetch(`http://localhost:8080/api/partner/menu/${itemId}/toggle-availability`, {
+                method: 'PATCH',
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+            if (res.ok) {
+                fetchMenu();
+            }
+        } catch (error) {
+            console.error('Error toggling availability:', error);
+        }
+    };
+
+    const handleDeleteMenuItem = async (itemId) => {
+        if (!window.confirm("Are you sure you want to delete this item?")) return;
+        try {
+            const res = await fetch(`http://localhost:8080/api/partner/menu/${itemId}`, {
+                method: 'DELETE',
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+            if (res.ok) {
+                fetchMenu();
+            }
+        } catch (error) {
+            console.error('Error deleting menu item:', error);
+        }
+    };
 
     const fetchRestaurantData = async () => {
         try {
@@ -298,8 +381,162 @@ export default function RestaurantDashboard() {
             {/* Menu Management Tab */}
             {activeTab === 'menu' && (
                 <div style={styles.menuContainer}>
-                    <h2 style={styles.sectionTitle}>🍽️ Menu Management</h2>
-                    <p style={styles.comingSoon}>Menu management features coming soon!</p>
+                    <div style={styles.menuHeader}>
+                        <h2 style={styles.sectionTitle}>🍽️ Menu Management</h2>
+                        <button 
+                            style={styles.addItemBtn}
+                            onClick={() => setShowAddModal(true)}
+                        >
+                            ➕ Add New Item
+                        </button>
+                    </div>
+
+                    {menuLoading ? (
+                        <div style={styles.loadingContainer}>
+                            <div style={styles.loader}></div>
+                            <p>Loading menu items...</p>
+                        </div>
+                    ) : menuItems.length === 0 ? (
+                        <div style={styles.emptyState}>
+                            <div style={styles.emptyIcon}>🍽️</div>
+                            <h3>Your menu is empty</h3>
+                            <p>Start adding delicious dishes to your restaurant!</p>
+                        </div>
+                    ) : (
+                        <div style={styles.menuGrid}>
+                            {menuItems.map(item => (
+                                <div key={item.id} style={{
+                                    ...styles.menuItemCard,
+                                    opacity: item.available ? 1 : 0.7
+                                }}>
+                                    <div style={styles.menuItemImageContainer}>
+                                        <img 
+                                            src={item.imageUrl || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=300&h=200&fit=crop'} 
+                                            alt={item.name} 
+                                            style={styles.menuItemImage}
+                                        />
+                                        {!item.available && (
+                                            <div style={styles.soldOutOverlay}>SOLD OUT</div>
+                                        )}
+                                    </div>
+                                    <div style={styles.menuItemContent}>
+                                        <div style={styles.menuItemHeader}>
+                                            <h3 style={styles.menuItemName}>{item.name}</h3>
+                                            <span style={styles.menuItemPrice}>₹{item.price}</span>
+                                        </div>
+                                        <p style={styles.menuItemDesc}>{item.description}</p>
+                                        <div style={styles.menuItemFooter}>
+                                            <span style={{
+                                                ...styles.categoryTag,
+                                                background: item.isVeg ? '#e6fffa' : '#fff5f5',
+                                                color: item.isVeg ? '#2c7a7b' : '#c53030'
+                                            }}>
+                                                {item.isVeg ? '🥗 Veg' : '🍗 Non-Veg'}
+                                            </span>
+                                            <div style={styles.menuItemActions}>
+                                                <button 
+                                                    onClick={() => handleToggleAvailability(item.id)}
+                                                    style={{
+                                                        ...styles.toggleBtn,
+                                                        background: item.available ? '#48bb78' : '#cbd5e0'
+                                                    }}
+                                                    title={item.available ? "Mark as Sold Out" : "Mark as Available"}
+                                                >
+                                                    {item.available ? '✅ In Stock' : '❌ Sold Out'}
+                                                </button>
+                                                <button 
+                                                    onClick={() => handleDeleteMenuItem(item.id)}
+                                                    style={styles.deleteBtn}
+                                                    title="Delete Item"
+                                                >
+                                                    🗑️
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Add Item Modal */}
+                    {showAddModal && (
+                        <div style={styles.modalOverlay}>
+                            <div style={styles.modal}>
+                                <div style={styles.modalHeader}>
+                                    <h3>➕ Add New Menu Item</h3>
+                                    <button onClick={() => setShowAddModal(false)} style={styles.closeBtn}>✕</button>
+                                </div>
+                                <form onSubmit={handleAddMenuItem} style={styles.modalForm}>
+                                    <div style={styles.formGroup}>
+                                        <label style={styles.label}>Dish Name</label>
+                                        <input 
+                                            type="text" 
+                                            style={styles.input} 
+                                            placeholder="e.g. Special Chicken Biryani"
+                                            value={newItem.name}
+                                            onChange={(e) => setNewItem({...newItem, name: e.target.value})}
+                                            required
+                                        />
+                                    </div>
+                                    <div style={styles.formRow}>
+                                        <div style={styles.formGroup}>
+                                            <label style={styles.label}>Price (₹)</label>
+                                            <input 
+                                                type="number" 
+                                                style={styles.input} 
+                                                placeholder="299"
+                                                value={newItem.price}
+                                                onChange={(e) => setNewItem({...newItem, price: e.target.value})}
+                                                required
+                                            />
+                                        </div>
+                                        <div style={styles.formGroup}>
+                                            <label style={styles.label}>Category</label>
+                                            <input 
+                                                type="text" 
+                                                style={styles.input} 
+                                                placeholder="e.g. Main Course"
+                                                value={newItem.category}
+                                                onChange={(e) => setNewItem({...newItem, category: e.target.value})}
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+                                    <div style={styles.formGroup}>
+                                        <label style={styles.label}>Description</label>
+                                        <textarea 
+                                            style={{...styles.input, height: '80px'}} 
+                                            placeholder="Tell your customers what's special about this dish..."
+                                            value={newItem.description}
+                                            onChange={(e) => setNewItem({...newItem, description: e.target.value})}
+                                        />
+                                    </div>
+                                    <div style={styles.formRow}>
+                                        <div style={styles.checkboxGroup}>
+                                            <input 
+                                                type="checkbox" 
+                                                id="isVeg"
+                                                checked={newItem.isVeg}
+                                                onChange={(e) => setNewItem({...newItem, isVeg: e.target.checked})}
+                                            />
+                                            <label htmlFor="isVeg">Vegetarian</label>
+                                        </div>
+                                        <div style={styles.checkboxGroup}>
+                                            <input 
+                                                type="checkbox" 
+                                                id="isSpicy"
+                                                checked={newItem.isSpicy}
+                                                onChange={(e) => setNewItem({...newItem, isSpicy: e.target.checked})}
+                                            />
+                                            <label htmlFor="isSpicy">Spicy</label>
+                                        </div>
+                                    </div>
+                                    <button type="submit" style={styles.submitBtn}>🚀 Add to Menu</button>
+                                </form>
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -562,5 +799,203 @@ const styles = {
         borderRadius: '50%',
         animation: 'spin 1s linear infinite',
         marginBottom: '16px'
+    },
+    menuHeader: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '24px'
+    },
+    addItemBtn: {
+        padding: '12px 24px',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        color: 'white',
+        border: 'none',
+        borderRadius: '12px',
+        cursor: 'pointer',
+        fontWeight: '600',
+        boxShadow: '0 4px 15px rgba(118, 75, 162, 0.3)',
+        transition: 'transform 0.2s ease'
+    },
+    menuGrid: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+        gap: '20px'
+    },
+    menuItemCard: {
+        background: 'white',
+        borderRadius: '16px',
+        overflow: 'hidden',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+        transition: 'all 0.3s ease',
+        border: '1px solid #f0f0f0'
+    },
+    menuItemImageContainer: {
+        height: '180px',
+        position: 'relative'
+    },
+    menuItemImage: {
+        width: '100%',
+        height: '100%',
+        objectFit: 'cover'
+    },
+    soldOutOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'rgba(0,0,0,0.6)',
+        color: 'white',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: '20px',
+        fontWeight: '800',
+        letterSpacing: '1px'
+    },
+    menuItemContent: {
+        padding: '20px'
+    },
+    menuItemHeader: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        marginBottom: '10px'
+    },
+    menuItemName: {
+        fontSize: '18px',
+        fontWeight: '700',
+        margin: 0,
+        color: '#2d3748'
+    },
+    menuItemPrice: {
+        fontSize: '18px',
+        fontWeight: '800',
+        color: '#ff6b6b'
+    },
+    menuItemDesc: {
+        fontSize: '14px',
+        color: '#718096',
+        marginBottom: '20px',
+        height: '40px',
+        overflow: 'hidden',
+        display: '-webkit-box',
+        WebkitLineClamp: 2,
+        WebkitBoxOrient: 'vertical'
+    },
+    menuItemFooter: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center'
+    },
+    categoryTag: {
+        padding: '4px 10px',
+        borderRadius: '20px',
+        fontSize: '12px',
+        fontWeight: '600'
+    },
+    menuItemActions: {
+        display: 'flex',
+        gap: '8px'
+    },
+    toggleBtn: {
+        padding: '6px 12px',
+        border: 'none',
+        borderRadius: '8px',
+        color: 'white',
+        fontSize: '12px',
+        fontWeight: '600',
+        cursor: 'pointer'
+    },
+    deleteBtn: {
+        padding: '6px',
+        background: '#fff5f5',
+        border: '1px solid #fed7d7',
+        borderRadius: '8px',
+        cursor: 'pointer',
+        fontSize: '14px'
+    },
+    modalOverlay: {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'rgba(0,0,0,0.7)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1000,
+        backdropFilter: 'blur(5px)'
+    },
+    modal: {
+        background: 'white',
+        width: '90%',
+        maxWidth: '500px',
+        borderRadius: '24px',
+        padding: '32px',
+        boxShadow: '0 20px 40px rgba(0,0,0,0.2)'
+    },
+    modalHeader: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '24px'
+    },
+    closeBtn: {
+        background: 'none',
+        border: 'none',
+        fontSize: '20px',
+        cursor: 'pointer',
+        color: '#a0aec0'
+    },
+    modalForm: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '20px'
+    },
+    formRow: {
+        display: 'flex',
+        gap: '15px'
+    },
+    formGroup: {
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '8px'
+    },
+    label: {
+        fontSize: '14px',
+        fontWeight: '600',
+        color: '#4a5568'
+    },
+    input: {
+        padding: '12px 16px',
+        borderRadius: '12px',
+        border: '1px solid #e2e8f0',
+        fontSize: '15px',
+        outline: 'none',
+        transition: 'border-color 0.2s ease'
+    },
+    checkboxGroup: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '10px',
+        fontSize: '14px',
+        fontWeight: '600',
+        color: '#4a5568'
+    },
+    submitBtn: {
+        padding: '16px',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        color: 'white',
+        border: 'none',
+        borderRadius: '12px',
+        fontSize: '16px',
+        fontWeight: '700',
+        cursor: 'pointer',
+        marginTop: '10px',
+        boxShadow: '0 4px 15px rgba(118, 75, 162, 0.3)'
     }
-};
+};
