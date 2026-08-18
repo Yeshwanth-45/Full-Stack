@@ -29,7 +29,7 @@ public class SecurityConfig {
 
         http
                 .csrf(csrf -> csrf.disable())
-                .cors(cors -> {})
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()   // <-- allow all auth APIs
                         .requestMatchers("/api/restaurant/login", "/api/restaurant/register").permitAll() // <-- allow restaurant auth

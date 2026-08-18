@@ -7,16 +7,26 @@ export default function Navbar() {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const [showProfile, setShowProfile] = useState(false);
     const [cartCount, setCartCount] = useState(0);
+    const [isScrolled, setIsScrolled] = useState(false);
     const location = useLocation();
     
-    // Support both customer and restaurant auth states
     const customerToken = localStorage.getItem("token");
     const restaurantToken = localStorage.getItem("restaurantToken");
     const token = customerToken || restaurantToken;
     const isRestaurant = !!restaurantToken && location.pathname.includes('restaurant');
 
+    useEffect(() => {
+        const handleScroll = () => {
+            if (window.scrollY > 20) {
+                setIsScrolled(true);
+            } else {
+                setIsScrolled(false);
+            }
+        };
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
 
-    // Update cart count whenever location changes
     useEffect(() => {
         const updateCartCount = () => {
             const cart = JSON.parse(localStorage.getItem("cart") || "[]");
@@ -25,11 +35,7 @@ export default function Navbar() {
         };
 
         updateCartCount();
-
-        // Listen for storage changes (when cart is updated in other tabs/windows)
         window.addEventListener('storage', updateCartCount);
-        
-        // Listen for custom cart update event
         window.addEventListener('cartUpdated', updateCartCount);
 
         return () => {
@@ -49,14 +55,19 @@ export default function Navbar() {
 
     return (
         <>
-            <nav style={styles.navbar}>
+            <nav style={{
+                ...styles.navbar,
+                top: isScrolled ? '10px' : '20px',
+                width: isScrolled ? '92%' : '90%',
+                boxShadow: isScrolled ? '0 20px 40px rgba(0, 0, 0, 0.15)' : '0 10px 30px rgba(0, 0, 0, 0.05)'
+            }}>
                 <div style={styles.container}>
                     {/* Logo Section */}
                     <Link to="/" style={styles.logo}>
-                        <div style={styles.logoIcon}>🍔</div>
+                        <div style={styles.logoIcon}>⚡</div>
                         <div style={styles.logoContent}>
                             <span style={styles.logoText}>BiteRush</span>
-                            <span style={styles.logoTagline}>Order • Eat • Repeat</span>
+                            <span style={styles.logoTagline}>AI-Fulfillment</span>
                         </div>
                     </Link>
                     
@@ -73,7 +84,7 @@ export default function Navbar() {
                                         }}
                                     >
                                         <span style={styles.navIcon}>📊</span>
-                                        <span>Dashboard</span>
+                                        <span>Console</span>
                                     </Link>
                                     <button 
                                         onClick={() => {
@@ -81,9 +92,9 @@ export default function Navbar() {
                                             localStorage.removeItem("restaurantData");
                                             window.location.href = "/restaurant-login";
                                         }}
-                                        style={styles.profileBtn}
+                                        style={styles.logoutBtn}
                                     >
-                                        🚪 Logout
+                                        Logout
                                     </button>
                                 </>
                             ) : (
@@ -96,7 +107,7 @@ export default function Navbar() {
                                         }}
                                     >
                                         <span style={styles.navIcon}>🏠</span>
-                                        <span>Home</span>
+                                        <span style={styles.linkLabel}>Home</span>
                                     </Link>
                                     <Link 
                                         to="/menu" 
@@ -106,7 +117,7 @@ export default function Navbar() {
                                         }}
                                     >
                                         <span style={styles.navIcon}>🍽️</span>
-                                        <span>Menu</span>
+                                        <span style={styles.linkLabel}>Menu</span>
                                     </Link>
                                     <Link 
                                         to="/orders" 
@@ -116,7 +127,7 @@ export default function Navbar() {
                                         }}
                                     >
                                         <span style={styles.navIcon}>📦</span>
-                                        <span>Orders</span>
+                                        <span style={styles.linkLabel}>Orders</span>
                                     </Link>
                                     <Link 
                                         to="/cart" 
@@ -126,7 +137,7 @@ export default function Navbar() {
                                         }}
                                     >
                                         <span style={styles.navIcon}>🛒</span>
-                                        <span>Cart</span>
+                                        <span style={styles.linkLabel}>Cart</span>
                                         {cartCount > 0 && (
                                             <span style={styles.cartBadge}>{cartCount}</span>
                                         )}
@@ -139,10 +150,8 @@ export default function Navbar() {
                                             ...styles.profileBtn,
                                             ...(showProfile ? styles.profileBtnActive : {})
                                         }}
-                                        className="profile-btn"
-                                        title={`Logged in as ${user.name || user.email}`}
                                     >
-                                        <div style={styles.profileAvatar} className="profile-avatar">
+                                        <div style={styles.profileAvatar}>
                                             {user.name ? user.name.charAt(0).toUpperCase() : '👤'}
                                         </div>
                                         <span style={styles.profileName}>
@@ -154,21 +163,19 @@ export default function Navbar() {
                         ) : (
                             <>
                                 <Link to="/auth" style={styles.loginBtn}>
-                                    <span style={styles.loginIcon}>🔐</span>
-                                    <span>Login</span>
+                                    <span>Sign In</span>
                                 </Link>
                                 <Link to="/auth?mode=register" style={styles.registerBtn}>
-                                    <span>Sign Up</span>
+                                    <span>Register</span>
                                 </Link>
                             </>
                         )}
                         
-                        {/* Debug Button (only show in development) */}
                         {process.env.NODE_ENV === 'development' && (
                             <button 
                                 onClick={handleClearStorage}
                                 style={styles.debugBtn}
-                                title="Clear localStorage if having issues"
+                                title="Clear localStorage"
                             >
                                 🗑️
                             </button>
@@ -177,7 +184,6 @@ export default function Navbar() {
                 </div>
             </nav>
             
-            {/* User Profile Modal - Rendered at document root using Portal */}
             {showProfile && createPortal(
                 <EnhancedUserProfile onClose={() => setShowProfile(false)} />,
                 document.body
@@ -188,38 +194,38 @@ export default function Navbar() {
 
 const styles = {
     navbar: {
-        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-        boxShadow: "0 8px 32px rgba(102, 126, 234, 0.2)",
-        position: "sticky",
-        top: 0,
-        zIndex: 100,
-        backdropFilter: "blur(20px)",
-        borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
+        position: "fixed",
+        left: "50%",
+        transform: "translateX(-50%)",
+        background: "rgba(15, 23, 42, 0.8)", // Slate dark glass
+        backdropFilter: "blur(24px)",
+        borderRadius: "40px",
+        border: "1px solid rgba(255, 255, 255, 0.15)",
+        zIndex: 1000,
+        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
         overflow: "visible"
     },
     container: {
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-        padding: "12px 24px",
-        maxWidth: "1400px",
-        margin: "0 auto",
+        padding: "8px 20px",
         position: "relative"
     },
     logo: {
         display: "flex",
         alignItems: "center",
-        gap: "16px",
+        gap: "10px",
         textDecoration: "none",
         color: "white",
-        transition: "all 0.3s ease",
-        padding: "8px 12px",
+        padding: "6px 12px",
         borderRadius: "12px"
     },
     logoIcon: {
-        fontSize: "36px",
-        filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.3))",
-        animation: "bounce 2s infinite"
+        fontSize: "24px",
+        color: "#a78bfa",
+        textShadow: "0 0 10px rgba(167, 139, 250, 0.5)",
+        fontWeight: 'bold'
     },
     logoContent: {
         display: "flex",
@@ -227,150 +233,134 @@ const styles = {
         alignItems: "flex-start"
     },
     logoText: {
-        fontSize: "24px",
-        fontWeight: "800",
+        fontSize: "18px",
+        fontWeight: "900",
         letterSpacing: "-0.5px",
         lineHeight: "1"
     },
     logoTagline: {
-        fontSize: "11px",
-        opacity: "0.8",
-        fontWeight: "500",
+        fontSize: "9px",
+        opacity: "0.7",
+        fontWeight: "600",
         letterSpacing: "0.5px",
-        marginTop: "2px"
+        marginTop: "2px",
+        textTransform: 'uppercase'
     },
     navLinks: {
         display: "flex",
         alignItems: "center",
-        gap: "4px",
+        gap: "6px",
         position: "relative"
     },
     navLink: {
         display: "flex",
         alignItems: "center",
-        gap: "8px",
-        padding: "12px 16px",
+        gap: "6px",
+        padding: "8px 14px",
         color: "white",
         textDecoration: "none",
-        borderRadius: "12px",
+        borderRadius: "30px",
         fontWeight: "600",
-        fontSize: "14px",
-        transition: "all 0.3s ease",
-        background: "rgba(255, 255, 255, 0.1)",
-        backdropFilter: "blur(10px)",
-        border: "1px solid rgba(255, 255, 255, 0.1)",
+        fontSize: "13px",
+        transition: "all 0.2s ease",
+        background: "transparent",
         position: "relative"
     },
     navLinkActive: {
-        background: "rgba(255, 255, 255, 0.25)",
-        border: "1px solid rgba(255, 255, 255, 0.3)",
-        transform: "translateY(-1px)",
-        boxShadow: "0 4px 12px rgba(0,0,0,0.2)"
+        background: "rgba(255, 255, 255, 0.15)",
+        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.15)",
+        border: "1px solid rgba(255,255,255,0.05)"
+    },
+    linkLabel: {
+        display: 'inline'
     },
     navIcon: {
-        fontSize: "16px"
+        fontSize: "14px"
     },
     cartBadge: {
-        position: "absolute",
-        top: "-6px",
-        right: "-6px",
-        background: "#ff6b6b",
+        background: "#ef4444",
         color: "white",
         borderRadius: "50%",
-        width: "20px",
-        height: "20px",
-        fontSize: "11px",
-        fontWeight: "700",
+        width: "16px",
+        height: "16px",
+        fontSize: "9px",
+        fontWeight: "800",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        border: "2px solid white",
-        animation: "pulse 2s infinite"
+        border: "1px solid #0f172a",
+        marginLeft: '4px'
     },
     profileBtn: {
         display: "flex",
         alignItems: "center",
-        gap: "10px",
-        padding: "8px 16px",
-        background: "rgba(255, 255, 255, 0.15)",
-        color: "white",
-        border: "1px solid rgba(255, 255, 255, 0.2)",
-        borderRadius: "25px",
-        cursor: "pointer",
-        fontWeight: "600",
-        fontSize: "14px",
-        transition: "all 0.3s ease",
-        backdropFilter: "blur(10px)"
-    },
-    profileBtnActive: {
-        background: "rgba(255, 255, 255, 0.25)",
-        border: "1px solid rgba(255, 255, 255, 0.4)",
-        boxShadow: "0 4px 12px rgba(0,0,0,0.2)"
-    },
-    profileAvatar: {
-        width: "32px",
-        height: "32px",
-        borderRadius: "50%",
-        background: "linear-gradient(135deg, #ff6b6b, #ee5a24)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        fontSize: "14px",
-        fontWeight: "700",
-        color: "white",
-        border: "2px solid rgba(255, 255, 255, 0.3)"
-    },
-    profileName: {
-        fontSize: "14px",
-        fontWeight: "600"
-    },
-    loginBtn: {
-        display: "flex",
-        alignItems: "center",
         gap: "8px",
-        padding: "12px 20px",
-        background: "rgba(255, 255, 255, 0.15)",
-        color: "white",
-        textDecoration: "none",
-        borderRadius: "25px",
-        fontWeight: "600",
-        fontSize: "14px",
-        transition: "all 0.3s ease",
-        backdropFilter: "blur(10px)",
-        border: "1px solid rgba(255, 255, 255, 0.2)"
-    },
-    loginIcon: {
-        fontSize: "16px"
-    },
-    registerBtn: {
-        display: "flex",
-        alignItems: "center",
-        gap: "8px",
-        padding: "12px 20px",
-        background: "rgba(255, 255, 255, 0.9)",
-        color: "#667eea",
-        textDecoration: "none",
-        borderRadius: "25px",
-        fontWeight: "700",
-        fontSize: "14px",
-        transition: "all 0.3s ease",
-        border: "2px solid rgba(255, 255, 255, 0.5)",
-        boxShadow: "0 4px 12px rgba(0,0,0,0.1)"
-    },
-    debugBtn: {
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        width: "36px",
-        height: "36px",
+        padding: "6px 12px",
         background: "rgba(255, 255, 255, 0.1)",
         color: "white",
-        border: "1px solid rgba(255, 255, 255, 0.2)",
+        border: "1px solid rgba(255, 255, 255, 0.1)",
+        borderRadius: "30px",
+        cursor: "pointer",
+        fontWeight: "600",
+        fontSize: "13px",
+        transition: "all 0.2s ease"
+    },
+    profileBtnActive: {
+        background: "rgba(255, 255, 255, 0.2)",
+        borderColor: "rgba(255,255,255,0.3)"
+    },
+    profileAvatar: {
+        width: "24px",
+        height: "24px",
+        borderRadius: "50%",
+        background: "linear-gradient(135deg, #a78bfa, #ec4899)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: "11px",
+        fontWeight: "750",
+        color: "white"
+    },
+    profileName: {
+        fontSize: "12px",
+        fontWeight: "600"
+    },
+    logoutBtn: {
+        padding: "8px 14px",
+        background: "#ef4444",
+        color: "white",
+        border: "none",
+        borderRadius: "30px",
+        fontSize: "12px",
+        fontWeight: "700",
+        cursor: "pointer"
+    },
+    loginBtn: {
+        padding: "8px 16px",
+        color: "white",
+        textDecoration: "none",
+        fontWeight: "600",
+        fontSize: "13px"
+    },
+    registerBtn: {
+        padding: "8px 16px",
+        background: "white",
+        color: "#0f172a",
+        textDecoration: "none",
+        borderRadius: "30px",
+        fontWeight: "700",
+        fontSize: "13px",
+        boxShadow: "0 4px 10px rgba(255, 255, 255, 0.1)"
+    },
+    debugBtn: {
+        width: "30px",
+        height: "30px",
+        background: "rgba(255, 255, 255, 0.05)",
+        color: "white",
+        border: "none",
         borderRadius: "50%",
         cursor: "pointer",
-        fontSize: "14px",
-        transition: "all 0.3s ease",
-        backdropFilter: "blur(10px)",
-        opacity: "0.7"
+        fontSize: "12px",
+        opacity: "0.6"
     }
 };

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { api } from '../services/api';
 
 export default function EnhancedUserProfile({ onClose }) {
     const [user, setUser] = useState({});
@@ -28,11 +29,31 @@ export default function EnhancedUserProfile({ onClose }) {
         favoriteRestaurants: []
     });
 
+    // Wallet state
+    const [wallet, setWallet] = useState({ balance: 0, loyaltyPoints: 0, transactions: [] });
+    const [addAmount, setAddAmount] = useState('');
+    const [walletMessage, setWalletMessage] = useState('');
+    const [walletError, setWalletError] = useState('');
+
+    // Referral state
+    const [referralData, setReferralData] = useState({ referralCode: '', history: [], referredBy: '', totalEarned: 0 });
+    const [friendCode, setFriendCode] = useState('');
+    const [referralMessage, setReferralMessage] = useState('');
+    const [referralError, setReferralError] = useState('');
+
+    // Subscription state
+    const [subscription, setSubscription] = useState({ active: false });
+    const [subMessage, setSubMessage] = useState('');
+    const [subError, setSubError] = useState('');
+
     useEffect(() => {
         loadUserProfile();
         loadOrderHistory();
         loadAddresses();
         initializeBadges();
+        loadWallet();
+        loadReferrals();
+        loadSubscription();
         
         // Add ESC key listener to close modal
         const handleEscKey = (e) => {
@@ -133,6 +154,166 @@ export default function EnhancedUserProfile({ onClose }) {
         setUserStats(prev => ({ ...prev, badges }));
     };
 
+    // Load Wallet
+    const loadWallet = async () => {
+        try {
+            const res = await api('/wallet');
+            if (res.ok) {
+                const data = await res.json();
+                setWallet(data);
+                setUserStats(prev => ({ ...prev, points: data.loyaltyPoints }));
+            }
+        } catch (err) {
+            console.error('Failed to load wallet:', err);
+        }
+    };
+
+    // Load Referrals
+    const loadReferrals = async () => {
+        try {
+            const res = await api('/referrals');
+            if (res.ok) {
+                const data = await res.json();
+                setReferralData(data);
+            }
+        } catch (err) {
+            console.error('Failed to load referrals:', err);
+        }
+    };
+
+    // Load Subscription
+    const loadSubscription = async () => {
+        try {
+            const res = await api('/subscriptions/active');
+            if (res.ok) {
+                const data = await res.json();
+                setSubscription(data);
+            }
+        } catch (err) {
+            console.error('Failed to load subscription:', err);
+        }
+    };
+
+    // Handle Wallet Deposit
+    const handleAddMoney = async () => {
+        setWalletError('');
+        setWalletMessage('');
+        const amt = parseFloat(addAmount);
+        if (isNaN(amt) || amt <= 0) {
+            setWalletError('Please enter a valid positive amount.');
+            return;
+        }
+        try {
+            const res = await api('/wallet/add', {
+                method: 'POST',
+                body: JSON.stringify({ amount: amt })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                setWalletMessage(`Successfully added ₹${amt.toFixed(2)} to wallet!`);
+                setAddAmount('');
+                loadWallet();
+            } else {
+                setWalletError(data.message || 'Failed to add funds.');
+            }
+        } catch (err) {
+            setWalletError('Error connecting to backend.');
+        }
+    };
+
+    // Handle Redeem Points
+    const handleRedeemPoints = async (points) => {
+        setWalletError('');
+        setWalletMessage('');
+        try {
+            const res = await api('/wallet/redeem-points', {
+                method: 'POST',
+                body: JSON.stringify({ points: points })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                setWalletMessage(data.message || 'Points redeemed successfully!');
+                loadWallet();
+            } else {
+                setWalletError(data.message || 'Failed to redeem points.');
+            }
+        } catch (err) {
+            setWalletError('Error connecting to backend.');
+        }
+    };
+
+    // Handle Apply Referral Code
+    const handleApplyReferral = async () => {
+        setReferralError('');
+        setReferralMessage('');
+        if (!friendCode.trim()) {
+            setReferralError('Please enter a code.');
+            return;
+        }
+        try {
+            const res = await api('/referrals/apply', {
+                method: 'POST',
+                body: JSON.stringify({ code: friendCode })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                setReferralMessage(data.message || 'Code applied successfully!');
+                setFriendCode('');
+                loadReferrals();
+                loadWallet(); // To reflect new wallet credits
+            } else {
+                setReferralError(data.message || 'Failed to apply referral code.');
+            }
+        } catch (err) {
+            setReferralError('Error connecting to backend.');
+        }
+    };
+
+    // Handle Purchase Subscription
+    const handlePurchaseSubscription = async (planType) => {
+        setSubError('');
+        setSubMessage('');
+        try {
+            const res = await api('/subscriptions/subscribe', {
+                method: 'POST',
+                body: JSON.stringify({ planType: planType })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                setSubMessage(data.message || `Subscribed to ${planType} successfully!`);
+                loadSubscription();
+                loadWallet(); // Reload wallet since we debited the subscription fee
+            } else {
+                setSubError(data.message || 'Failed to subscribe.');
+            }
+        } catch (err) {
+            setSubError('Error connecting to backend.');
+        }
+    };
+
+    // Handle Cancel Subscription
+    const handleCancelSubscription = async () => {
+        setSubError('');
+        setSubMessage('');
+        if (!window.confirm('Are you sure you want to cancel your Gold membership?')) {
+            return;
+        }
+        try {
+            const res = await api('/subscriptions/cancel', {
+                method: 'POST'
+            });
+            const data = await res.json();
+            if (res.ok) {
+                setSubMessage(data.message || 'Subscription cancelled successfully.');
+                loadSubscription();
+            } else {
+                setSubError(data.message || 'Failed to cancel subscription.');
+            }
+        } catch (err) {
+            setSubError('Error connecting to backend.');
+        }
+    };
+
     const handleSave = async () => {
         try {
             // In real app, save to backend
@@ -208,9 +389,12 @@ export default function EnhancedUserProfile({ onClose }) {
                 <div style={styles.tabNav}>
                     {[
                         { id: 'profile', label: 'Profile', icon: '👤' },
+                        { id: 'wallet', label: 'Wallet', icon: '💳' },
                         { id: 'rewards', label: 'Rewards', icon: '🏆' },
                         { id: 'orders', label: 'Orders', icon: '📦' },
                         { id: 'addresses', label: 'Addresses', icon: '📍' },
+                        { id: 'referrals', label: 'Referrals', icon: '👥' },
+                        { id: 'subscriptions', label: 'Subscriptions', icon: '👑' },
                         { id: 'preferences', label: 'Settings', icon: '⚙️' }
                     ].map(tab => (
                         <button
@@ -310,6 +494,82 @@ export default function EnhancedUserProfile({ onClose }) {
                             <button onClick={handleLogout} style={styles.logoutBtn} className="logout-btn">
                                 🚪 Logout
                             </button>
+                        </div>
+                    )}
+
+                    {/* Wallet Tab */}
+                    {activeTab === 'wallet' && (
+                        <div style={styles.walletSection}>
+                            <h4 style={styles.sectionTitle}>💳 BiteRush Wallet</h4>
+                            
+                            <div style={styles.walletBalanceCard}>
+                                <div style={styles.walletLabel}>Current Balance</div>
+                                <div style={styles.walletValue}>₹{wallet.balance.toFixed(2)}</div>
+                                <div style={styles.loyaltyValue}>✨ {wallet.loyaltyPoints} Loyalty Points</div>
+                            </div>
+
+                            {/* Add Funds Form */}
+                            <div style={styles.actionCard}>
+                                <h5 style={styles.actionTitle}>Add Money to Wallet</h5>
+                                <div style={styles.formRow}>
+                                    <input 
+                                        type="number" 
+                                        placeholder="Enter amount (₹)" 
+                                        value={addAmount} 
+                                        onChange={(e) => setAddAmount(e.target.value)}
+                                        style={styles.inputField}
+                                    />
+                                    <button onClick={handleAddMoney} style={styles.actionBtn}>Add Funds</button>
+                                </div>
+                                {walletMessage && <p style={styles.successMsg}>{walletMessage}</p>}
+                                {walletError && <p style={styles.errorMsg}>{walletError}</p>}
+                            </div>
+
+                            {/* Redeem Points Form */}
+                            <div style={styles.actionCard}>
+                                <h5 style={styles.actionTitle}>Redeem Loyalty Points</h5>
+                                <p style={styles.infoText}>10 Loyalty Points = ₹1.00 wallet credit</p>
+                                <button 
+                                    onClick={() => handleRedeemPoints(100)} 
+                                    disabled={wallet.loyaltyPoints < 100}
+                                    style={{
+                                        ...styles.actionBtn, 
+                                        opacity: wallet.loyaltyPoints >= 100 ? 1 : 0.5,
+                                        width: 'auto'
+                                    }}
+                                >
+                                    Redeem 100 Points (₹10.00)
+                                </button>
+                            </div>
+
+                            {/* Wallet Transaction History */}
+                            <div style={styles.txnSection}>
+                                <h5 style={styles.actionTitle}>Transaction History</h5>
+                                {wallet.transactions && wallet.transactions.length > 0 ? (
+                                    <div style={styles.txnList}>
+                                        {wallet.transactions.map(txn => (
+                                            <div key={txn.id} style={styles.txnCard}>
+                                                <div style={styles.txnHeader}>
+                                                    <span style={{
+                                                        ...styles.txnType,
+                                                        color: txn.type === 'CREDIT' ? '#10b981' : '#ef4444'
+                                                    }}>{txn.type}</span>
+                                                    <span style={styles.txnDate}>{new Date(txn.createdAt).toLocaleDateString()}</span>
+                                                </div>
+                                                <div style={styles.txnBody}>
+                                                    <span style={styles.txnDesc}>{txn.description}</span>
+                                                    <span style={{
+                                                        ...styles.txnAmt,
+                                                        color: txn.type === 'CREDIT' ? '#10b981' : '#ef4444'
+                                                    }}>{txn.type === 'CREDIT' ? '+' : '-'} ₹{txn.amount.toFixed(2)}</span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p style={styles.noTxns}>No transactions yet.</p>
+                                )}
+                            </div>
                         </div>
                     )}
 
@@ -441,6 +701,161 @@ export default function EnhancedUserProfile({ onClose }) {
                                     </div>
                                 </div>
                             ))}
+                        </div>
+                    )}
+
+                    {/* Referrals Tab */}
+                    {activeTab === 'referrals' && (
+                        <div style={styles.referralSection}>
+                            <h4 style={styles.sectionTitle}>👥 Refer & Earn</h4>
+                            
+                            <div style={styles.referralCodeCard}>
+                                <div style={styles.refLabel}>Your Unique Referral Code</div>
+                                <div style={styles.refCode}>{referralData.referralCode}</div>
+                                <p style={styles.infoText}>Share this code with friends! When they join, they get ₹20 and you get ₹50 credit.</p>
+                            </div>
+
+                            {/* Apply Referral Code */}
+                            {!referralData.referredBy ? (
+                                <div style={styles.actionCard}>
+                                    <h5 style={styles.actionTitle}>Got a Friend's Referral Code?</h5>
+                                    <div style={styles.formRow}>
+                                        <input 
+                                            type="text" 
+                                            placeholder="Enter referral code" 
+                                            value={friendCode} 
+                                            onChange={(e) => setFriendCode(e.target.value)}
+                                            style={styles.inputField}
+                                        />
+                                        <button onClick={handleApplyReferral} style={styles.actionBtn}>Apply Code</button>
+                                    </div>
+                                    {referralMessage && <p style={styles.successMsg}>{referralMessage}</p>}
+                                    {referralError && <p style={styles.errorMsg}>{referralError}</p>}
+                                </div>
+                            ) : (
+                                <div style={styles.actionCard}>
+                                    <p style={styles.successMsg}>✓ Referred by: <strong>{referralData.referredBy}</strong> (Reward received!)</p>
+                                </div>
+                            )}
+
+                            {/* Referral Stats */}
+                            <div style={styles.statsGrid}>
+                                <div style={styles.statCard}>
+                                    <div style={styles.statIcon}>👥</div>
+                                    <div style={styles.statValue}>{referralData.history ? referralData.history.length : 0}</div>
+                                    <div style={styles.statLabel}>Successful Invites</div>
+                                </div>
+                                <div style={styles.statCard}>
+                                    <div style={styles.statIcon}>💰</div>
+                                    <div style={styles.statValue}>₹{(referralData.totalEarned || 0).toFixed(2)}</div>
+                                    <div style={styles.statLabel}>Total Earned</div>
+                                </div>
+                            </div>
+
+                            {/* Referral History */}
+                            <div style={styles.txnSection}>
+                                <h5 style={styles.actionTitle}>Invited Friends</h5>
+                                {referralData.history && referralData.history.length > 0 ? (
+                                    <div style={styles.txnList}>
+                                        {referralData.history.map(ref => (
+                                            <div key={ref.id} style={styles.txnCard}>
+                                                <div style={styles.txnHeader}>
+                                                    <span style={styles.txnDesc}><strong>{ref.referredName}</strong> ({ref.referredEmail})</span>
+                                                    <span style={styles.txnDate}>{new Date(ref.completedAt).toLocaleDateString()}</span>
+                                                </div>
+                                                <div style={styles.txnBody}>
+                                                    <span style={styles.pointsEarned}>+{ref.points} pts</span>
+                                                    <span style={{...styles.txnAmt, color: '#10b981'}}>+ ₹{ref.reward.toFixed(2)}</span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p style={styles.noTxns}>No friends referred yet. Share your code above to start earning!</p>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Subscriptions Tab */}
+                    {activeTab === 'subscriptions' && (
+                        <div style={styles.subscriptionSection}>
+                            <h4 style={styles.sectionTitle}>👑 BiteRush Gold Membership</h4>
+                            
+                            {subscription.active ? (
+                                <div style={styles.subActiveCard}>
+                                    <div style={styles.subHeader}>
+                                        <span style={styles.subBadge}>{subscription.planType} Member</span>
+                                        <span style={styles.subStatus}>ACTIVE</span>
+                                    </div>
+                                    <div style={styles.subInfoRow}>
+                                        <div>
+                                            <div style={styles.subLabel}>Deliveries Left</div>
+                                            <div style={styles.subValue}>{subscription.deliveriesPerMonth === 999 ? 'Unlimited' : (subscription.deliveriesPerMonth - subscription.deliveriesUsed)}</div>
+                                        </div>
+                                        <div>
+                                            <div style={styles.subLabel}>Discount</div>
+                                            <div style={styles.subValue}>{subscription.discountPercentage}% OFF</div>
+                                        </div>
+                                        <div>
+                                            <div style={styles.subLabel}>Free Delivery</div>
+                                            <div style={styles.subValue}>{subscription.freeDelivery ? 'YES' : 'NO'}</div>
+                                        </div>
+                                    </div>
+                                    <p style={styles.subMeta}>Next Billing Date: {new Date(subscription.nextBillingDate).toLocaleDateString()}</p>
+                                    <button onClick={handleCancelSubscription} style={styles.cancelSubBtn}>Cancel Subscription</button>
+                                    {subMessage && <p style={styles.successMsg}>{subMessage}</p>}
+                                    {subError && <p style={styles.errorMsg}>{subError}</p>}
+                                </div>
+                            ) : (
+                                <div style={styles.subIntro}>
+                                    <p style={styles.infoText}>Unlock free deliveries, exclusive discounts, and priority customer support with our subscription plans.</p>
+                                    
+                                    <div style={styles.plansGrid}>
+                                        {/* Basic Plan */}
+                                        <div style={styles.planCard}>
+                                            <h5 style={styles.planName}>Basic</h5>
+                                            <div style={styles.planPrice}>₹99<span style={styles.planPeriod}>/mo</span></div>
+                                            <ul style={styles.planFeatures}>
+                                                <li>🚚 5 Free Deliveries / mo</li>
+                                                <li>✓ Free Delivery</li>
+                                                <li>✗ No Extra Discounts</li>
+                                                <li>✗ Standard Support</li>
+                                            </ul>
+                                            <button onClick={() => handlePurchaseSubscription('BASIC')} style={styles.planBtn}>Get Basic</button>
+                                        </div>
+
+                                        {/* Premium Plan */}
+                                        <div style={{...styles.planCard, border: '2px solid #8b5cf6', background: '#fcfaff'}}>
+                                            <div style={styles.popularBadge}>Most Popular</div>
+                                            <h5 style={styles.planName}>Premium</h5>
+                                            <div style={styles.planPrice}>₹199<span style={styles.planPeriod}>/mo</span></div>
+                                            <ul style={styles.planFeatures}>
+                                                <li>🚚 15 Free Deliveries / mo</li>
+                                                <li>✓ Free Delivery</li>
+                                                <li>🏷️ 5% Off All Orders</li>
+                                                <li>⚡ Priority Support</li>
+                                            </ul>
+                                            <button onClick={() => handlePurchaseSubscription('PREMIUM')} style={{...styles.planBtn, background: '#8b5cf6'}}>Get Premium</button>
+                                        </div>
+
+                                        {/* Gold Plan */}
+                                        <div style={styles.planCard}>
+                                            <h5 style={styles.planName}>Gold</h5>
+                                            <div style={styles.planPrice}>₹299<span style={styles.planPeriod}>/mo</span></div>
+                                            <ul style={styles.planFeatures}>
+                                                <li>🚀 Unlimited Free Deliveries</li>
+                                                <li>✓ Free Delivery</li>
+                                                <li>🏷️ 10% Off All Orders</li>
+                                                <li>👑 VIP Support & Offers</li>
+                                            </ul>
+                                            <button onClick={() => handlePurchaseSubscription('GOLD')} style={styles.planBtn}>Get Gold</button>
+                                        </div>
+                                    </div>
+                                    {subMessage && <p style={styles.successMsg}>{subMessage}</p>}
+                                    {subError && <p style={styles.errorMsg}>{subError}</p>}
+                                </div>
+                            )}
                         </div>
                     )}
 
@@ -1105,5 +1520,327 @@ const styles = {
         padding: '40px',
         fontSize: '16px',
         color: '#64748b'
+    },
+    walletSection: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '20px',
+        padding: '10px 0'
+    },
+    walletBalanceCard: {
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        borderRadius: '16px',
+        padding: '24px',
+        color: 'white',
+        textAlign: 'center',
+        boxShadow: '0 8px 20px rgba(102, 126, 234, 0.25)'
+    },
+    walletLabel: {
+        fontSize: '14px',
+        opacity: '0.85',
+        marginBottom: '8px',
+        fontWeight: '500'
+    },
+    walletValue: {
+        fontSize: '36px',
+        fontWeight: '800',
+        marginBottom: '10px'
+    },
+    loyaltyValue: {
+        fontSize: '14px',
+        background: 'rgba(255, 255, 255, 0.2)',
+        padding: '6px 12px',
+        borderRadius: '20px',
+        display: 'inline-block',
+        fontWeight: '600'
+    },
+    actionCard: {
+        background: '#f8fafc',
+        borderRadius: '16px',
+        padding: '20px',
+        border: '1px solid #e2e8f0',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '12px'
+    },
+    actionTitle: {
+        margin: 0,
+        fontSize: '16px',
+        fontWeight: '700',
+        color: '#1e293b'
+    },
+    formRow: {
+        display: 'flex',
+        gap: '12px'
+    },
+    inputField: {
+        flex: 1,
+        padding: '12px 16px',
+        borderRadius: '12px',
+        border: '1px solid #cbd5e1',
+        fontSize: '14px',
+        outline: 'none',
+        transition: 'border 0.2s ease',
+        background: 'white',
+        color: '#1e293b'
+    },
+    actionBtn: {
+        padding: '12px 24px',
+        background: '#667eea',
+        color: 'white',
+        border: 'none',
+        borderRadius: '12px',
+        fontWeight: '600',
+        cursor: 'pointer',
+        fontSize: '14px',
+        transition: 'background 0.2s ease'
+    },
+    successMsg: {
+        margin: 0,
+        color: '#10b981',
+        fontSize: '14px',
+        fontWeight: '600'
+    },
+    errorMsg: {
+        margin: 0,
+        color: '#ef4444',
+        fontSize: '14px',
+        fontWeight: '600'
+    },
+    infoText: {
+        margin: 0,
+        color: '#64748b',
+        fontSize: '14px',
+        lineHeight: '1.5'
+    },
+    txnSection: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '12px',
+        marginTop: '10px'
+    },
+    txnList: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '10px',
+        maxHeight: '300px',
+        overflowY: 'auto',
+        paddingRight: '4px'
+    },
+    txnCard: {
+        background: 'white',
+        borderRadius: '12px',
+        padding: '14px 16px',
+        border: '1px solid #f1f5f9',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '8px'
+    },
+    txnHeader: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center'
+    },
+    txnType: {
+        fontSize: '11px',
+        fontWeight: '700',
+        padding: '2px 8px',
+        borderRadius: '8px',
+        background: '#f1f5f9',
+        letterSpacing: '0.5px'
+    },
+    txnDate: {
+        fontSize: '12px',
+        color: '#94a3b8'
+    },
+    txnBody: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center'
+    },
+    txnDesc: {
+        fontSize: '14px',
+        color: '#475569',
+        fontWeight: '500'
+    },
+    txnAmt: {
+        fontSize: '16px',
+        fontWeight: '700'
+    },
+    noTxns: {
+        margin: 0,
+        color: '#94a3b8',
+        fontSize: '14px',
+        textAlign: 'center',
+        padding: '20px 0'
+    },
+    referralSection: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '20px',
+        padding: '10px 0'
+    },
+    referralCodeCard: {
+        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+        borderRadius: '16px',
+        padding: '24px',
+        color: 'white',
+        textAlign: 'center',
+        boxShadow: '0 8px 20px rgba(16, 185, 129, 0.2)'
+    },
+    refLabel: {
+        fontSize: '14px',
+        opacity: '0.9',
+        marginBottom: '8px',
+        fontWeight: '500'
+    },
+    refCode: {
+        fontSize: '32px',
+        fontWeight: '800',
+        letterSpacing: '1.5px',
+        marginBottom: '12px',
+        textTransform: 'uppercase'
+    },
+    subscriptionSection: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '20px',
+        padding: '10px 0'
+    },
+    subActiveCard: {
+        background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+        borderRadius: '16px',
+        padding: '24px',
+        color: 'white',
+        boxShadow: '0 8px 20px rgba(245, 158, 11, 0.25)'
+    },
+    subHeader: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '20px'
+    },
+    subBadge: {
+        fontSize: '20px',
+        fontWeight: '800'
+    },
+    subStatus: {
+        background: 'rgba(255, 255, 255, 0.25)',
+        padding: '4px 12px',
+        borderRadius: '12px',
+        fontSize: '12px',
+        fontWeight: '700',
+        letterSpacing: '1px'
+    },
+    subInfoRow: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(3, 1fr)',
+        gap: '16px',
+        marginBottom: '20px',
+        background: 'rgba(0, 0, 0, 0.1)',
+        padding: '16px',
+        borderRadius: '12px'
+    },
+    subLabel: {
+        fontSize: '11px',
+        opacity: '0.85',
+        marginBottom: '4px',
+        fontWeight: '600',
+        textTransform: 'uppercase'
+    },
+    subValue: {
+        fontSize: '18px',
+        fontWeight: '800'
+    },
+    subMeta: {
+        margin: '0 0 16px 0',
+        fontSize: '13px',
+        opacity: '0.9',
+        fontWeight: '500'
+    },
+    cancelSubBtn: {
+        padding: '10px 20px',
+        background: 'rgba(255, 255, 255, 0.2)',
+        color: 'white',
+        border: '1px solid rgba(255, 255, 255, 0.4)',
+        borderRadius: '10px',
+        fontWeight: '600',
+        cursor: 'pointer',
+        fontSize: '13px',
+        transition: 'background 0.2s ease'
+    },
+    subIntro: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '24px'
+    },
+    plansGrid: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+        gap: '20px'
+    },
+    planCard: {
+        background: 'white',
+        borderRadius: '16px',
+        padding: '24px',
+        border: '1px solid #e2e8f0',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '16px',
+        position: 'relative',
+        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)'
+    },
+    planName: {
+        margin: 0,
+        fontSize: '20px',
+        fontWeight: '700',
+        color: '#1e293b'
+    },
+    planPrice: {
+        fontSize: '28px',
+        fontWeight: '800',
+        color: '#1e293b'
+    },
+    planPeriod: {
+        fontSize: '14px',
+        color: '#64748b',
+        fontWeight: '500'
+    },
+    planFeatures: {
+        listStyle: 'none',
+        padding: 0,
+        margin: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '10px',
+        fontSize: '13px',
+        color: '#475569',
+        flex: 1
+    },
+    planBtn: {
+        width: '100%',
+        padding: '10px 16px',
+        background: '#667eea',
+        color: 'white',
+        border: 'none',
+        borderRadius: '10px',
+        fontWeight: '600',
+        cursor: 'pointer',
+        fontSize: '14px',
+        transition: 'background 0.2s'
+    },
+    popularBadge: {
+        position: 'absolute',
+        top: '-12px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        background: '#8b5cf6',
+        color: 'white',
+        padding: '4px 12px',
+        borderRadius: '12px',
+        fontSize: '11px',
+        fontWeight: '700',
+        textTransform: 'uppercase',
+        boxShadow: '0 2px 4px rgba(139, 92, 246, 0.2)'
     }
 };

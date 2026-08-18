@@ -13,6 +13,7 @@ import Cart from "./pages/Cart";
 import OrderTracking from "./pages/OrderTracking";
 import RestaurantLogin from "./pages/RestaurantLogin";
 import RestaurantDashboard from "./pages/RestaurantDashboard";
+import AdminDashboard from "./pages/AdminDashboard";
 import PrivateRoute from "./components/PrivateRoute";
 
 export default function App() {
@@ -33,6 +34,7 @@ export default function App() {
                     <Route path="/orders" element={<PrivateRoute><Orders /></PrivateRoute>} />
                     <Route path="/cart" element={<PrivateRoute><Cart /></PrivateRoute>} />
                     <Route path="/tracking/:orderId" element={<PrivateRoute><OrderTracking /></PrivateRoute>} />
+                    <Route path="/admin" element={<PrivateRoute><AdminDashboard /></PrivateRoute>} />
                     
                     {/* Restaurant Routes */}
                     <Route path="/restaurant-login" element={<RestaurantLogin />} />

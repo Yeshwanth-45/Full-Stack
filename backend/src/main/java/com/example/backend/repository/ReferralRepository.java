@@ -14,4 +14,5 @@ public interface ReferralRepository extends JpaRepository<Referral, Long> {
     List<Referral> findByReferrerOrderByCreatedAtDesc(User referrer);
     List<Referral> findByReferrerIdOrderByCreatedAtDesc(Long referrerId);
     Long countByReferrerAndStatus(User referrer, String status);
+    Optional<Referral> findByReferred(User referred);
 }
