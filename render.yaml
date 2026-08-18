@@ -1,0 +1,36 @@
+services:
+  # Spring Boot Backend Web Service
+  - type: web
+    name: foodiehub-backend
+    env: docker
+    context: ./backend
+    dockerfilePath: ./backend/Dockerfile
+    region: singapore
+    plan: free
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: SPRING_DATASOURCE_URL
+        fromDatabase:
+          name: foodiehub-db
+          property: connectionString
+      - key: SPRING_DATASOURCE_USERNAME
+        fromDatabase:
+          name: foodiehub-db
+          property: user
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromDatabase:
+          name: foodiehub-db
+          property: password
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ALLOWED_ORIGINS
+        value: "*" # Update with your Vercel frontend URL after deployment
+
+databases:
+  # MySQL Database Instance
+  - name: foodiehub-db
+    databaseName: foodiehub
+    user: foodieuser
+    region: singapore
+    plan: free
